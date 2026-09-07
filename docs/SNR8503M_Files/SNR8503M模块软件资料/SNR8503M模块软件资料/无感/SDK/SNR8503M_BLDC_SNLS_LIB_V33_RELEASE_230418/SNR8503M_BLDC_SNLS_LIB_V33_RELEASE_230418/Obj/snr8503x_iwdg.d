@@ -1,0 +1,10 @@
+.\obj\snr8503x_iwdg.o: SNR8503x_Periph_Driver\Source\snr8503x_IWDG.c
+.\obj\snr8503x_iwdg.o: .\SNR8503x_Periph_Driver\include\snr8503x_iwdg.h
+.\obj\snr8503x_iwdg.o: .\SNR8503x_Periph_Driver\include\snr8503x.h
+.\obj\snr8503x_iwdg.o: .\Include\basic.h
+.\obj\snr8503x_iwdg.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+.\obj\snr8503x_iwdg.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\obj\snr8503x_iwdg.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\ctype.h
+.\obj\snr8503x_iwdg.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\obj\snr8503x_iwdg.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\obj\snr8503x_iwdg.o: .\Include\core_cm0.h

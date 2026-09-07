@@ -1,0 +1,15 @@
+# PlatformIO Build Directory
+.pio/
+
+# IDE files
+.vscode/
+.idea/
+
+# Scratch & temporary test scripts
+scratch/
+*.bak
+*.tmp
+
+# OS files
+.DS_Store
+Thumbs.db

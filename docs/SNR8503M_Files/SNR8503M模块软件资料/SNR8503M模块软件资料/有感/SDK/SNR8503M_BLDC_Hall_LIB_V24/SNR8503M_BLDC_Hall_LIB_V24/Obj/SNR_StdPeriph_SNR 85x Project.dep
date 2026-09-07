@@ -1,0 +1,663 @@
+Dependencies for Project 'SNR_StdPeriph', Target 'SNR 85x Project': (DO NOT MODIFY !)
+F (.\AppFunction\hardware_init.c)(0x64410055)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\hardware_init.o --omf_browse .\obj\hardware_init.crf --depend .\obj\hardware_init.d)
+I (.\Include\hardware_config.h)(0x6442082B)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_MCPWM.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_sys.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_gpio.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_adc.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dac.h)(0x6424FD28)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_Flash.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dma.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_cmp.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_uart.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_hall.h)(0x63D492B2)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_timer.h)(0x63E30642)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_NVR.h)(0x6321A460)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_iwdg.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dsp.h)(0x64424C0F)
+I (.\SNR8503x_Periph_Driver\include\delay.h)(0x6332EFA9)
+I (.\Include\hardware_init.h)(0x6440FC6B)
+I (.\Include\Global_Variable.h)(0x64410092)
+I (.\Include\mc_type.h)(0x63217E88)
+I (.\Include\MC_Parameter.h)(0x6479ACC1)
+I (.\Include\UR_Ctrl.h)(0x6332D06B)
+I (.\Include\main.h)(0x6440FC0E)
+F (.\AppFunction\Global_Variable.c)(0x64CA0DFD)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\global_variable.o --omf_browse .\obj\global_variable.crf --depend .\obj\global_variable.d)
+I (.\Include\MC_Parameter.h)(0x6479ACC1)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+I (.\Include\hardware_config.h)(0x6442082B)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_MCPWM.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_sys.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_gpio.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_adc.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dac.h)(0x6424FD28)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_Flash.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dma.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_cmp.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_uart.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_hall.h)(0x63D492B2)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_timer.h)(0x63E30642)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_NVR.h)(0x6321A460)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_iwdg.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dsp.h)(0x64424C0F)
+I (.\SNR8503x_Periph_Driver\include\delay.h)(0x6332EFA9)
+I (.\Include\hardware_init.h)(0x6440FC6B)
+I (.\Include\Global_Variable.h)(0x64410092)
+I (.\Include\mc_type.h)(0x63217E88)
+I (.\Include\motor_structure.h)(0x646DD26B)
+I (.\Include\SpeedRamp.h)(0x642B8CDC)
+I (.\Include\main.h)(0x6440FC0E)
+I (.\Include\MC_Drive.h)(0x6441F065)
+I (.\Include\SNR_BLDC_HALL_V1p0.h)(0x64425480)
+I (.\Include\PID.h)(0x636F600F)
+I (.\Include\commonfunc.h)(0x636F98D0)
+F (.\AppFunction\System_Init.c)(0x6440FDD8)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\system_init.o --omf_browse .\obj\system_init.crf --depend .\obj\system_init.d)
+I (.\Include\hardware_config.h)(0x6442082B)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_MCPWM.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_sys.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_gpio.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_adc.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dac.h)(0x6424FD28)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_Flash.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dma.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_cmp.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_uart.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_hall.h)(0x63D492B2)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_timer.h)(0x63E30642)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_NVR.h)(0x6321A460)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_iwdg.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dsp.h)(0x64424C0F)
+I (.\SNR8503x_Periph_Driver\include\delay.h)(0x6332EFA9)
+I (.\Include\hardware_init.h)(0x6440FC6B)
+I (.\Include\Global_Variable.h)(0x64410092)
+I (.\Include\mc_type.h)(0x63217E88)
+I (.\Include\MC_Parameter.h)(0x6479ACC1)
+I (.\Include\M1_StateMachine.h)(0x62F88B0C)
+I (.\Include\motor_structure.h)(0x646DD26B)
+F (.\Kernal_Source\MosTest.c)(0x642ADE9A)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\mostest.o --omf_browse .\obj\mostest.crf --depend .\obj\mostest.d)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+I (.\Include\Global_Variable.h)(0x64410092)
+I (.\Include\mc_type.h)(0x63217E88)
+I (.\Include\MosTest.h)(0x62F71A62)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_adc.h)(0x63218005)
+I (.\Include\hardware_config.h)(0x6442082B)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_MCPWM.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_sys.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_gpio.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dac.h)(0x6424FD28)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_Flash.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dma.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_cmp.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_uart.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_hall.h)(0x63D492B2)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_timer.h)(0x63E30642)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_NVR.h)(0x6321A460)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_iwdg.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dsp.h)(0x64424C0F)
+I (.\SNR8503x_Periph_Driver\include\delay.h)(0x6332EFA9)
+I (.\Include\hardware_init.h)(0x6440FC6B)
+I (.\Include\MC_Parameter.h)(0x6479ACC1)
+I (.\Include\M1_StateMachine.h)(0x62F88B0C)
+I (.\Include\motor_structure.h)(0x646DD26B)
+F (.\Kernal_Source\main.c)(0x646AEFD9)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\main.o --omf_browse .\obj\main.crf --depend .\obj\main.d)
+I (.\Include\main.h)(0x6440FC0E)
+I (.\Include\hardware_config.h)(0x6442082B)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_MCPWM.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_sys.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_gpio.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_adc.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dac.h)(0x6424FD28)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_Flash.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dma.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_cmp.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_uart.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_hall.h)(0x63D492B2)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_timer.h)(0x63E30642)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_NVR.h)(0x6321A460)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_iwdg.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dsp.h)(0x64424C0F)
+I (.\SNR8503x_Periph_Driver\include\delay.h)(0x6332EFA9)
+I (.\Include\hardware_init.h)(0x6440FC6B)
+I (.\Include\Global_Variable.h)(0x64410092)
+I (.\Include\mc_type.h)(0x63217E88)
+I (.\Include\MC_Parameter.h)(0x6479ACC1)
+I (.\Include\PID.h)(0x636F600F)
+I (.\Include\commonfunc.h)(0x636F98D0)
+I (.\Include\MC_Drive.h)(0x6441F065)
+I (.\Include\SNR_BLDC_HALL_V1p0.h)(0x64425480)
+I (.\Include\SpeedRamp.h)(0x642B8CDC)
+I (.\Include\motor_structure.h)(0x646DD26B)
+I (.\Include\M1_StateMachine.h)(0x62F88B0C)
+I (.\Include\UR_Ctrl.h)(0x6332D06B)
+F (.\Kernal_Source\Protect.c)(0x643FCDBB)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\protect.o --omf_browse .\obj\protect.crf --depend .\obj\protect.d)
+I (.\Include\global_variable.h)(0x64410092)
+I (.\Include\mc_type.h)(0x63217E88)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+I (.\Include\MC_Parameter.h)(0x6479ACC1)
+I (.\Include\hardware_config.h)(0x6442082B)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_MCPWM.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_sys.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_gpio.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_adc.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dac.h)(0x6424FD28)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_Flash.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dma.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_cmp.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_uart.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_hall.h)(0x63D492B2)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_timer.h)(0x63E30642)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_NVR.h)(0x6321A460)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_iwdg.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dsp.h)(0x64424C0F)
+I (.\SNR8503x_Periph_Driver\include\delay.h)(0x6332EFA9)
+I (.\Include\hardware_init.h)(0x6440FC6B)
+I (.\Include\motor_structure.h)(0x646DD26B)
+I (.\Include\M1_StateMachine.h)(0x62F88B0C)
+I (.\Include\MC_Drive.h)(0x6441F065)
+I (.\Include\main.h)(0x6440FC0E)
+I (.\Include\SNR_BLDC_HALL_V1p0.h)(0x64425480)
+I (.\Include\SpeedRamp.h)(0x642B8CDC)
+I (.\Include\PID.h)(0x636F600F)
+I (.\Include\commonfunc.h)(0x636F98D0)
+F (.\Kernal_Source\interrupt.c)(0x64CA0EE3)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\interrupt.o --omf_browse .\obj\interrupt.crf --depend .\obj\interrupt.d)
+I (.\Include\hardware_config.h)(0x6442082B)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_MCPWM.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_sys.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_gpio.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_adc.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dac.h)(0x6424FD28)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_Flash.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dma.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_cmp.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_uart.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_hall.h)(0x63D492B2)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_timer.h)(0x63E30642)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_NVR.h)(0x6321A460)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_iwdg.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dsp.h)(0x64424C0F)
+I (.\SNR8503x_Periph_Driver\include\delay.h)(0x6332EFA9)
+I (.\Include\hardware_init.h)(0x6440FC6B)
+I (.\Include\Global_Variable.h)(0x64410092)
+I (.\Include\mc_type.h)(0x63217E88)
+I (.\Include\MC_Parameter.h)(0x6479ACC1)
+I (.\Include\MC_Drive.h)(0x6441F065)
+I (.\Include\main.h)(0x6440FC0E)
+I (.\Include\SNR_BLDC_HALL_V1p0.h)(0x64425480)
+I (.\Include\motor_structure.h)(0x646DD26B)
+I (.\Include\M1_StateMachine.h)(0x62F88B0C)
+I (.\Include\MosTest.h)(0x62F71A62)
+I (.\Include\UR_Ctrl.h)(0x6332D06B)
+F (.\Kernal_Source\M1_StateMachine.c)(0x646DD448)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\m1_statemachine.o --omf_browse .\obj\m1_statemachine.crf --depend .\obj\m1_statemachine.d)
+I (.\Include\M1_StateMachine.h)(0x62F88B0C)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+I (.\Include\global_variable.h)(0x64410092)
+I (.\Include\mc_type.h)(0x63217E88)
+I (.\Include\absacc.h)(0x613F494D)
+I (.\Include\MC_Parameter.h)(0x6479ACC1)
+I (.\Include\hardware_config.h)(0x6442082B)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_MCPWM.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_sys.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_gpio.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_adc.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dac.h)(0x6424FD28)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_Flash.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dma.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_cmp.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_uart.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_hall.h)(0x63D492B2)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_timer.h)(0x63E30642)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_NVR.h)(0x6321A460)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_iwdg.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dsp.h)(0x64424C0F)
+I (.\SNR8503x_Periph_Driver\include\delay.h)(0x6332EFA9)
+I (.\Include\hardware_init.h)(0x6440FC6B)
+I (.\Include\motor_structure.h)(0x646DD26B)
+I (.\Include\MC_Drive.h)(0x6441F065)
+I (.\Include\main.h)(0x6440FC0E)
+I (.\Include\SNR_BLDC_HALL_V1p0.h)(0x64425480)
+F (.\Kernal_Source\Sensor_Control.c)(0x64538BD1)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\sensor_control.o --omf_browse .\obj\sensor_control.crf --depend .\obj\sensor_control.d)
+I (.\Include\MC_Drive.h)(0x6441F065)
+I (.\Include\main.h)(0x6440FC0E)
+I (.\Include\hardware_config.h)(0x6442082B)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_MCPWM.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_sys.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_gpio.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_adc.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dac.h)(0x6424FD28)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_Flash.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dma.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_cmp.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_uart.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_hall.h)(0x63D492B2)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_timer.h)(0x63E30642)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_NVR.h)(0x6321A460)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_iwdg.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dsp.h)(0x64424C0F)
+I (.\SNR8503x_Periph_Driver\include\delay.h)(0x6332EFA9)
+I (.\Include\hardware_init.h)(0x6440FC6B)
+I (.\Include\Global_Variable.h)(0x64410092)
+I (.\Include\mc_type.h)(0x63217E88)
+I (.\Include\MC_Parameter.h)(0x6479ACC1)
+I (.\Include\SNR_BLDC_HALL_V1p0.h)(0x64425480)
+I (.\Include\motor_structure.h)(0x646DD26B)
+I (.\Include\M1_StateMachine.h)(0x62F88B0C)
+I (.\Include\SpeedRamp.h)(0x642B8CDC)
+F (.\Kernal_Source\SpeedRamp.c)(0x642AD79B)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\speedramp.o --omf_browse .\obj\speedramp.crf --depend .\obj\speedramp.d)
+I (.\Include\SpeedRamp.h)(0x642B8CDC)
+I (.\Include\main.h)(0x6440FC0E)
+I (.\Include\hardware_config.h)(0x6442082B)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_MCPWM.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_sys.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_gpio.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_adc.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dac.h)(0x6424FD28)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_Flash.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dma.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_cmp.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_uart.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_hall.h)(0x63D492B2)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_timer.h)(0x63E30642)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_NVR.h)(0x6321A460)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_iwdg.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dsp.h)(0x64424C0F)
+I (.\SNR8503x_Periph_Driver\include\delay.h)(0x6332EFA9)
+I (.\Include\hardware_init.h)(0x6440FC6B)
+I (.\Include\Global_Variable.h)(0x64410092)
+I (.\Include\mc_type.h)(0x63217E88)
+I (.\Include\MC_Parameter.h)(0x6479ACC1)
+I (.\Include\motor_structure.h)(0x646DD26B)
+F (.\Kernal_Source\MC_Drive.c)(0x64CA1239)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\mc_drive.o --omf_browse .\obj\mc_drive.crf --depend .\obj\mc_drive.d)
+I (.\Include\MC_Drive.h)(0x6441F065)
+I (.\Include\main.h)(0x6440FC0E)
+I (.\Include\hardware_config.h)(0x6442082B)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_MCPWM.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_sys.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_gpio.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_adc.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dac.h)(0x6424FD28)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_Flash.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dma.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_cmp.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_uart.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_hall.h)(0x63D492B2)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_timer.h)(0x63E30642)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_NVR.h)(0x6321A460)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_iwdg.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dsp.h)(0x64424C0F)
+I (.\SNR8503x_Periph_Driver\include\delay.h)(0x6332EFA9)
+I (.\Include\hardware_init.h)(0x6440FC6B)
+I (.\Include\Global_Variable.h)(0x64410092)
+I (.\Include\mc_type.h)(0x63217E88)
+I (.\Include\MC_Parameter.h)(0x6479ACC1)
+I (.\Include\SNR_BLDC_HALL_V1p0.h)(0x64425480)
+I (.\Include\motor_structure.h)(0x646DD26B)
+I (.\Include\M1_StateMachine.h)(0x62F88B0C)
+I (.\Include\SpeedRamp.h)(0x642B8CDC)
+I (.\Include\PID.h)(0x636F600F)
+I (.\Include\commonfunc.h)(0x636F98D0)
+F (.\Kernal_Source\PID.c)(0x636F600F)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\pid.o --omf_browse .\obj\pid.crf --depend .\obj\pid.d)
+I (.\Include\PID.h)(0x636F600F)
+I (.\Include\commonfunc.h)(0x636F98D0)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+I (.\Include\global_variable.h)(0x64410092)
+I (.\Include\mc_type.h)(0x63217E88)
+I (.\Include\MC_Parameter.h)(0x6479ACC1)
+I (.\Include\hardware_config.h)(0x6442082B)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_MCPWM.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_sys.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_gpio.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_adc.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dac.h)(0x6424FD28)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_Flash.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dma.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_cmp.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_uart.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_hall.h)(0x63D492B2)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_timer.h)(0x63E30642)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_NVR.h)(0x6321A460)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_iwdg.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dsp.h)(0x64424C0F)
+I (.\SNR8503x_Periph_Driver\include\delay.h)(0x6332EFA9)
+I (.\Include\hardware_init.h)(0x6440FC6B)
+I (.\Include\motor_structure.h)(0x646DD26B)
+I (.\Include\M1_StateMachine.h)(0x62F88B0C)
+I (.\Include\MC_Drive.h)(0x6441F065)
+I (.\Include\main.h)(0x6440FC0E)
+I (.\Include\SNR_BLDC_HALL_V1p0.h)(0x64425480)
+I (.\Include\SpeedRamp.h)(0x642B8CDC)
+F (.\Kernal_Source\UR_Ctrl.c)(0x6426EA61)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\ur_ctrl.o --omf_browse .\obj\ur_ctrl.crf --depend .\obj\ur_ctrl.d)
+I (.\Include\UR_Ctrl.h)(0x6332D06B)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+I (.\Include\hardware_config.h)(0x6442082B)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_MCPWM.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_sys.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_gpio.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_adc.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dac.h)(0x6424FD28)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_Flash.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dma.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_cmp.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_uart.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_hall.h)(0x63D492B2)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_timer.h)(0x63E30642)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_NVR.h)(0x6321A460)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_iwdg.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dsp.h)(0x64424C0F)
+I (.\SNR8503x_Periph_Driver\include\delay.h)(0x6332EFA9)
+I (.\Include\hardware_init.h)(0x6440FC6B)
+I (.\Include\Global_Variable.h)(0x64410092)
+I (.\Include\mc_type.h)(0x63217E88)
+I (.\Include\MC_Parameter.h)(0x6479ACC1)
+F (.\Include\MC_Parameter.h)(0x6479ACC1)()
+F (.\SNR8503x_Periph_Driver\Source\delay.c)(0x63217062)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\delay.o --omf_browse .\obj\delay.crf --depend .\obj\delay.d)
+I (.\SNR8503x_Periph_Driver\include\delay.h)(0x6332EFA9)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+F (.\SNR8503x_Periph_Driver\Source\snr8503x_adc.c)(0x635933AF)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\snr8503x_adc.o --omf_browse .\obj\snr8503x_adc.crf --depend .\obj\snr8503x_adc.d)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_adc.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_sys.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_gpio.h)(0x63218081)
+F (.\SNR8503x_Periph_Driver\Source\snr8503x_cmp.c)(0x63218081)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\snr8503x_cmp.o --omf_browse .\obj\snr8503x_cmp.crf --depend .\obj\snr8503x_cmp.d)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_cmp.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_sys.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_gpio.h)(0x63218081)
+F (.\SNR8503x_Periph_Driver\Source\snr8503x_DMA.c)(0x63218081)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\snr8503x_dma.o --omf_browse .\obj\snr8503x_dma.crf --depend .\obj\snr8503x_dma.d)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dma.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5CEB79E2)
+F (.\SNR8503x_Periph_Driver\Source\snr8503x_dsp.c)(0x64424C06)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\snr8503x_dsp.o --omf_browse .\obj\snr8503x_dsp.crf --depend .\obj\snr8503x_dsp.d)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dsp.h)(0x64424C0F)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_sys.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_gpio.h)(0x63218081)
+F (.\SNR8503x_Periph_Driver\Source\snr8503x_Flash.c)(0x63218005)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\snr8503x_flash.o --omf_browse .\obj\snr8503x_flash.crf --depend .\obj\snr8503x_flash.d)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+F (.\SNR8503x_Periph_Driver\Source\snr8503x_gpio.c)(0x63218081)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\snr8503x_gpio.o --omf_browse .\obj\snr8503x_gpio.crf --depend .\obj\snr8503x_gpio.d)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_gpio.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+F (.\SNR8503x_Periph_Driver\Source\snr8503x_hall.c)(0x6402B325)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\snr8503x_hall.o --omf_browse .\obj\snr8503x_hall.crf --depend .\obj\snr8503x_hall.d)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_hall.h)(0x63D492B2)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_sys.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_gpio.h)(0x63218081)
+F (.\SNR8503x_Periph_Driver\Source\snr8503x_I2C.c)(0x63218081)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\snr8503x_i2c.o --omf_browse .\obj\snr8503x_i2c.crf --depend .\obj\snr8503x_i2c.d)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_i2c.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_sys.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_gpio.h)(0x63218081)
+F (.\SNR8503x_Periph_Driver\Source\snr8503x_IWDG.c)(0x63218081)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\snr8503x_iwdg.o --omf_browse .\obj\snr8503x_iwdg.crf --depend .\obj\snr8503x_iwdg.d)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_iwdg.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+F (.\SNR8503x_Periph_Driver\Source\snr8503x_MCPWM.c)(0x63218005)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\snr8503x_mcpwm.o --omf_browse .\obj\snr8503x_mcpwm.crf --depend .\obj\snr8503x_mcpwm.d)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_MCPWM.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_sys.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_gpio.h)(0x63218081)
+I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5CEB79E2)
+F (.\SNR8503x_Periph_Driver\Source\snr8503x_spi.c)(0x63218081)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\snr8503x_spi.o --omf_browse .\obj\snr8503x_spi.crf --depend .\obj\snr8503x_spi.d)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_spi.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_sys.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_gpio.h)(0x63218081)
+F (.\SNR8503x_Periph_Driver\Source\snr8503x_sys.c)(0x63218081)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\snr8503x_sys.o --omf_browse .\obj\snr8503x_sys.crf --depend .\obj\snr8503x_sys.d)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_sys.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_gpio.h)(0x63218081)
+F (.\SNR8503x_Periph_Driver\Source\snr8503x_timer.c)(0x63E3058C)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\snr8503x_timer.o --omf_browse .\obj\snr8503x_timer.crf --depend .\obj\snr8503x_timer.d)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_timer.h)(0x63E30642)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_sys.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_gpio.h)(0x63218081)
+F (.\SNR8503x_Periph_Driver\Source\snr8503x_uart.c)(0x63218005)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\snr8503x_uart.o --omf_browse .\obj\snr8503x_uart.crf --depend .\obj\snr8503x_uart.d)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_uart.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_sys.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_gpio.h)(0x63218081)
+F (.\SNR8503x_Periph_Driver\Source\snr8503x_dac.c)(0x6424FCF7)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\snr8503x_dac.o --omf_browse .\obj\snr8503x_dac.crf --depend .\obj\snr8503x_dac.d)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dac.h)(0x6424FD28)
+I (.\SNR8503x_Periph_Driver\include\snr8503x.h)(0x6218D96D)
+I (.\Include\basic.h)(0x62C52724)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEB79DE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (.\Include\core_cm0.h)(0x613F494E)
+I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5CEB79E2)
+I (.\Include\hardware_config.h)(0x6442082B)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_MCPWM.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_sys.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_gpio.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_adc.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_Flash.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dma.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_cmp.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_uart.h)(0x63218005)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_hall.h)(0x63D492B2)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_timer.h)(0x63E30642)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_NVR.h)(0x6321A460)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_iwdg.h)(0x63218081)
+I (.\SNR8503x_Periph_Driver\include\snr8503x_dsp.h)(0x64424C0F)
+I (.\SNR8503x_Periph_Driver\include\delay.h)(0x6332EFA9)
+I (.\Include\hardware_init.h)(0x6440FC6B)
+I (.\Include\Global_Variable.h)(0x64410092)
+I (.\Include\mc_type.h)(0x63217E88)
+I (.\Include\MC_Parameter.h)(0x6479ACC1)
+F (.\SNR8503x_Periph_Driver\Source\snr8503x_nvr.lib)(0x630A4DBC)()
+F (.\SNR8503x_Periph_Driver\include\startup_snr8503x.s)(0x63217620)(--cpu Cortex-M0 --li -g --apcs=interwork -I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include--pd "__UVISION_VERSION SETA 528" --pd "ARMCM0 SETA 1"--list .\list\startup_snr8503x.lst --xref -o .\obj\startup_snr8503x.o --depend .\obj\startup_snr8503x.d)
+F (.\SEGGER_RTT\SEGGER_RTT.c)(0x628C8659)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\segger_rtt.o --omf_browse .\obj\segger_rtt.crf --depend .\obj\segger_rtt.d)
+I (SEGGER_RTT\SEGGER_RTT.h)(0x628C8659)
+I (SEGGER_RTT\SEGGER_RTT_Conf.h)(0x628C8659)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdarg.h)(0x5CEB79E4)
+I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5CEB79E2)
+F (.\SEGGER_RTT\SEGGER_RTT_printf.c)(0x628C8659)(--c99 --gnu -c --cpu Cortex-M0 --li -g -O2 --apcs=interwork --split_sections -I .\Include -I .\SNR8503x_Periph_Driver\include -I .\SEGGER_RTT-I.\RTE\_SNR_85x_Project-IC:\Users\SHOW\AppData\Local\Arm\Packs\ARM\CMSIS\5.5.1\Device\ARM\ARMCM0\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DARMCM0-o .\obj\segger_rtt_printf.o --omf_browse .\obj\segger_rtt_printf.crf --depend .\obj\segger_rtt_printf.d)
+I (SEGGER_RTT\SEGGER_RTT.h)(0x628C8659)
+I (SEGGER_RTT\SEGGER_RTT_Conf.h)(0x628C8659)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdarg.h)(0x5CEB79E4)
+F (.\Kernal_Source\SNR_BLDC_HALL_V1p0.lib)(0x645AFEAE)()

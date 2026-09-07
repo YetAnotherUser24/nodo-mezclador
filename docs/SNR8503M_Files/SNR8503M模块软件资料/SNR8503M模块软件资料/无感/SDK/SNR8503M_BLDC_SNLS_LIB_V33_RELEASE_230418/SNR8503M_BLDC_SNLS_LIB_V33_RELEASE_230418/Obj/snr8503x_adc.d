@@ -1,0 +1,12 @@
+.\obj\snr8503x_adc.o: SNR8503x_Periph_Driver\Source\snr8503x_adc.c
+.\obj\snr8503x_adc.o: .\SNR8503x_Periph_Driver\include\snr8503x_adc.h
+.\obj\snr8503x_adc.o: .\SNR8503x_Periph_Driver\include\snr8503x.h
+.\obj\snr8503x_adc.o: .\Include\basic.h
+.\obj\snr8503x_adc.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+.\obj\snr8503x_adc.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\obj\snr8503x_adc.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\ctype.h
+.\obj\snr8503x_adc.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\obj\snr8503x_adc.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\obj\snr8503x_adc.o: .\Include\core_cm0.h
+.\obj\snr8503x_adc.o: .\SNR8503x_Periph_Driver\include\snr8503x_sys.h
+.\obj\snr8503x_adc.o: .\SNR8503x_Periph_Driver\include\snr8503x_gpio.h
