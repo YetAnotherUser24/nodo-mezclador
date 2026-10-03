@@ -14,7 +14,7 @@
 // OTA Configuration
 // ---------------------------------------------------------
 #define OTA_HOSTNAME    "mixer-t200"
-#define OTA_PASSWORD    "admin123"
+#define OTA_PASSWORD    ""
 
 // ---------------------------------------------------------
 // Web Dashboard API

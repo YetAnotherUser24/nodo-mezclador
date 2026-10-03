@@ -161,8 +161,14 @@ void cloudWorkerTask(void* parameter) {
                         if (cmdObj["target_rpm"].is<float>()) {
                             newCmd.target_rpm = cmdObj["target_rpm"].as<float>();
                         }
+                        
                         if (cmdObj["target_rad_s"].is<float>()) {
                             newCmd.target_rad_s = cmdObj["target_rad_s"].as<float>();
+                        } else if (cmdObj["speed_percent"].is<float>()) {
+                            // Fallback if frontend sends speed_percent
+                            float speed_pct = cmdObj["speed_percent"].as<float>();
+                            newCmd.target_rad_s = (speed_pct / 100.0f) * 397.9f;
+                            newCmd.target_rpm = (newCmd.target_rad_s * 60.0f) / (2.0f * 3.14159265f);
                         }
                         updateSharedCommand(newCmd);
 
