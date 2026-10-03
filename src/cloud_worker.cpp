@@ -1,6 +1,7 @@
 #include "cloud_worker.h"
 #include "config.h"
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 
@@ -105,9 +106,12 @@ void cloudWorkerTask(void* parameter) {
             lastTelemetryPush = now;
             SharedTelemetry currentTelem = getSharedTelemetry();
 
+            WiFiClientSecure client;
+            client.setInsecure(); // Accept any certificate
             HTTPClient http;
-            http.begin(API_TELEMETRY);
+            http.begin(client, API_TELEMETRY);
             http.addHeader("Content-Type", "application/json");
+            http.addHeader("X-Device-Key", DEVICE_KEY);
 
             JsonDocument doc;
             doc["target_rpm"] = currentTelem.target_rpm;
@@ -137,8 +141,11 @@ void cloudWorkerTask(void* parameter) {
         if (now - lastCommandPoll >= COMMAND_POLL_INTERVAL_MS) {
             lastCommandPoll = now;
 
+            WiFiClientSecure client;
+            client.setInsecure();
             HTTPClient http;
-            http.begin(API_COMMANDS);
+            http.begin(client, API_COMMANDS);
+            http.addHeader("X-Device-Key", DEVICE_KEY);
             
             int httpResponseCode = http.GET();
             if (httpResponseCode == HTTP_CODE_OK) {
@@ -147,15 +154,43 @@ void cloudWorkerTask(void* parameter) {
                 DeserializationError error = deserializeJson(doc, payload);
 
                 if (!error) {
-                    SharedTelemetry newCmd = getSharedCommand();
-                    if (doc["target_rpm"].is<float>()) {
-                        newCmd.target_rpm = doc["target_rpm"].as<float>();
-                        // If web sets RPM, convert to rad/s for internal use if needed, but let Core 1 handle conversion
+                    if (doc["has_command"].as<bool>() && doc["command"].is<JsonObject>()) {
+                        JsonObject cmdObj = doc["command"].as<JsonObject>();
+                        SharedTelemetry newCmd = getSharedCommand();
+                        
+                        if (cmdObj["target_rpm"].is<float>()) {
+                            newCmd.target_rpm = cmdObj["target_rpm"].as<float>();
+                        }
+                        if (cmdObj["target_rad_s"].is<float>()) {
+                            newCmd.target_rad_s = cmdObj["target_rad_s"].as<float>();
+                        }
+                        updateSharedCommand(newCmd);
+
+                        // Acknowledge the command
+                        if (cmdObj["id"].is<const char*>()) {
+                            String cmdId = cmdObj["id"].as<String>();
+                            String ackUrl = String(API_BASE_URL) + "/api/commands/" + cmdId + "/acknowledge";
+                            
+                            WiFiClientSecure ackClient;
+                            ackClient.setInsecure();
+                            HTTPClient ackHttp;
+                            ackHttp.begin(ackClient, ackUrl);
+                            ackHttp.addHeader("Content-Type", "application/json");
+                            ackHttp.addHeader("X-Device-Key", DEVICE_KEY);
+                            
+                            JsonDocument ackDoc;
+                            ackDoc["success"] = true;
+                            ackDoc["message"] = "Command received by T-200";
+                            String ackPayload;
+                            serializeJson(ackDoc, ackPayload);
+                            
+                            int ackCode = ackHttp.POST(ackPayload);
+                            if (ackCode <= 0) {
+                                Serial.printf("[Cloud] ACK failed: %s\n", ackHttp.errorToString(ackCode).c_str());
+                            }
+                            ackHttp.end();
+                        }
                     }
-                    if (doc["target_rad_s"].is<float>()) {
-                        newCmd.target_rad_s = doc["target_rad_s"].as<float>();
-                    }
-                    updateSharedCommand(newCmd);
                 } else {
                     Serial.printf("[HTTP] GET deserialize failed: %s\n", error.c_str());
                 }

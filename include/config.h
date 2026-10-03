@@ -19,11 +19,11 @@
 // ---------------------------------------------------------
 // Web Dashboard API
 // ---------------------------------------------------------
-#define API_BASE_URL    "http://192.168.1.100:3000" // Replace with actual backend IP (usually port 3000 for Next.js)
+#define API_BASE_URL    "https://tesisutec.vercel.app" // Production Vercel backend
 #define API_TELEMETRY   API_BASE_URL "/api/telemetry/motor"
 #define API_COMMANDS    API_BASE_URL "/api/commands/pending"
 #define DEVICE_KEY      "ESP32_T_200" // Actual device key in DB
 
 // Polling and Telemetry Intervals
-#define TELEMETRY_INTERVAL_MS   500
+#define TELEMETRY_INTERVAL_MS   3000
 #define COMMAND_POLL_INTERVAL_MS 1000
