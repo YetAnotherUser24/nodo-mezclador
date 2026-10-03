@@ -71,7 +71,7 @@ constexpr float MOTOR_MAX_ALLOWED_DUTY    = 0.989f;  // Max achievable duty with
 // TOGGLEABLE ANALYTICAL PWM LINEARIZATION COMPENSATOR
 // =============================================================================
 #define ENABLE_PWM_LINEARIZATION          1          // 1 = Enabled (Option B), 0 = Pure Linear
-constexpr float PULLUP_RESISTOR_OHMS      = 220.0f;  // Rp in Ohms
+constexpr float PULLUP_RESISTOR_OHMS      = 200.0f;  // Rp in Ohms
 constexpr float R30_INTERNAL_OHMS         = 10000.0f;// Internal series resistor
 constexpr float GAIN_DIVIDER_RATIO        = (2.0f / 3.0f); // R32 / (R30 + R32) = 20k / 30k
 
