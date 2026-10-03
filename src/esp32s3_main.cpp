@@ -776,9 +776,9 @@ void loop() {
         lastTelemetryTimeMs = nowMs;
 
         if (sysidMode) {
-            // Fast compact CSV output for System ID
-            Serial.printf("SYSID,%lu,%.4f,%.4f,%.2f\n", 
-                          nowMs, currentCommandedDuty, currentCompensatedDuty, velocity.rpm);
+            // Fast compact CSV output for System ID (Strict SI units)
+            Serial.printf("SYSID,%lu,%.4f,%.4f,%.4f\n", 
+                          nowMs, currentCommandedDuty, currentCompensatedDuty, velocity.rad_s);
         } else {
             float targetRpm = (pid.target_rad_s * 60.0f) / TWO_PI_CONST;
             float errRadS = pid.target_rad_s - velocity.rad_s;

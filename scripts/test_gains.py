@@ -15,43 +15,43 @@ def find_com_port():
     return None
 
 def main():
-    parser = argparse.ArgumentParser(description="T-200 System ID Data Logger")
+    parser = argparse.ArgumentParser(description="T-200 PID Gain Tester")
     parser.add_argument('--port', type=str, help='COM port (e.g., COM16). Auto-detects if omitted.')
-    parser.add_argument('--duty', type=float, default=0.5, help='Target open-loop duty for the step response (0.0 - 1.0). Default: 0.5')
-    parser.add_argument('--duration', type=float, default=5.0, help='How many seconds to record. Default: 5.0')
-    parser.add_argument('--output', type=str, default='scripts/step_response.csv', help='Output CSV file name. Default: step_response.csv')
+    parser.add_argument('--kp', type=float, required=True, help='Proportional Gain (Kp)')
+    parser.add_argument('--ki', type=float, required=True, help='Integral Gain (Ki)')
+    parser.add_argument('--kd', type=float, required=True, help='Derivative Gain (Kd)')
+    parser.add_argument('--rpm', type=float, default=1500.0, help='Target RPM for step response. Default: 1500')
+    parser.add_argument('--duration', type=float, default=5.0, help='Duration to record (s). Default: 5.0')
+    parser.add_argument('--output', type=str, default='scripts/closed_loop_test.csv', help='Output CSV file')
     args = parser.parse_args()
 
-    port = args.port
+    port = args.port or find_com_port()
     if not port:
-        port = find_com_port()
-        if not port:
-            print("Error: Could not automatically find a COM port.")
-            sys.exit(1)
-        print(f"Auto-detected port: {port}")
+        print("Error: Could not find a COM port.")
+        sys.exit(1)
 
-    print(f"Connecting to {port} at 115200 baud...")
+    print(f"Connecting to {port}...")
     try:
         ser = serial.Serial(port, 115200, timeout=0.1)
     except Exception as e:
         print(f"Failed to open port {port}: {e}")
-        print("Make sure the Serial Monitor in PlatformIO is CLOSED before running this script!")
         sys.exit(1)
 
-    time.sleep(2) # Wait for ESP32 to reset if DTR is triggered
-
-    print("Sending STOP to ensure safe state...")
+    time.sleep(2)
     ser.write(b"STOP\n")
     time.sleep(0.5)
 
-    print("Activating SYSID Mode (50Hz telemetry)...")
+    print(f"Uploading Gains: Kp={args.kp}, Ki={args.ki}, Kd={args.kd}")
+    ser.write(f"TUNE {args.kp} {args.ki} {args.kd}\n".encode('ascii'))
+    time.sleep(0.5)
+
+    print("Activating SYSID Mode...")
     ser.write(b"SYSID ON\n")
     time.sleep(0.5)
     ser.reset_input_buffer()
 
-    print(f"Executing step response: DUTY {args.duty} for {args.duration} seconds...")
-    cmd = f"DUTY {args.duty}\n".encode('ascii')
-    ser.write(cmd)
+    print(f"Testing Closed-Loop Step Response: Target = {args.rpm} RPM...")
+    ser.write(f"RPM {args.rpm}\n".encode('ascii'))
 
     start_time = time.time()
     data_points = []
@@ -70,23 +70,19 @@ def main():
                         'Rad_s': rad_s
                     })
     except KeyboardInterrupt:
-        print("Interrupted by user.")
+        pass
 
-    print("Step response complete. Stopping motor...")
+    print("Test complete. Stopping motor...")
     ser.write(b"STOP\n")
     time.sleep(0.1)
     ser.write(b"SYSID OFF\n")
-    time.sleep(0.1)
     ser.close()
 
     if not data_points:
-        print("Warning: No SYSID data points were received! Did the ESP32 reboot or fail to recognize the command?")
+        print("Warning: No data received.")
         sys.exit(1)
 
-    # Normalize time so it starts at 0
     t0 = int(data_points[0]['Time_ms'])
-
-    # Write to CSV
     with open(args.output, mode='w', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=['Time_s', 'Target_Duty', 'Compensated_Duty', 'Rad_s'])
         writer.writeheader()
@@ -99,8 +95,7 @@ def main():
                 'Rad_s': row['Rad_s']
             })
 
-    print(f"Successfully saved {len(data_points)} samples to {args.output}")
-    print(f"Average sample rate: {len(data_points)/args.duration:.1f} Hz")
+    print(f"Saved {len(data_points)} points to {args.output}")
 
 if __name__ == '__main__':
     main()
