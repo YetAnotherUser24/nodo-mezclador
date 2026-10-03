@@ -94,6 +94,9 @@ try
     title('Theoretical Closed-Loop Step Response (with Optimal Gains)');
     grid on;
     saveas(f3, 'sysid_closed_loop.png');
+    
+    save('sysid_results.mat', 'sys_tf', 'C', 'P');
+
 
 catch
     disp('Control System Toolbox missing for pidtune. Cannot calculate gains automatically.');
