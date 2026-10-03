@@ -43,6 +43,10 @@
   #define PIN_LED             2       // Built-in status LED
 #endif
 
+#ifndef PIN_KNOB_ANALOG
+  #define PIN_KNOB_ANALOG     4       // GPIO for Potentiometer Manual Control
+#endif
+
 constexpr uint8_t  BLDC_POLE_PAIRS        = 7;       // BlueRobotics T-200 Thruster
 constexpr float    TWO_PI_CONST           = 6.283185307179586f;
 constexpr float    MAX_THRUSTER_RPM       = 3800.0f; // T-200 rated max forward speed
@@ -642,6 +646,71 @@ void readUserCommands() {
 }
 
 // =============================================================================
+// MANUAL KNOB CONTROL LOGIC
+// =============================================================================
+enum KnobState {
+    KNOB_LOCKED = 0,
+    KNOB_WAITING_100,
+    KNOB_WAITING_0,
+    KNOB_ACTIVE
+};
+static KnobState knobState = KNOB_LOCKED;
+static uint32_t knobZeroTimerMs = 0;
+static uint32_t lastKnobUpdateMs = 0;
+
+void updateKnobLogic() {
+    uint32_t now = millis();
+    if (now - lastKnobUpdateMs < 50) return; // 20 Hz update
+    lastKnobUpdateMs = now;
+
+    uint16_t rawAdc = analogRead(PIN_KNOB_ANALOG);
+    float knobPct = (float)rawAdc / 4095.0f; // 12-bit ADC (0.0 to 1.0)
+
+    bool isZero = (knobPct < 0.05f); // 5% deadband at bottom
+    bool isFull = (knobPct > 0.95f); // 5% deadband at top
+
+    switch(knobState) {
+        case KNOB_LOCKED:
+            if (isZero) knobState = KNOB_WAITING_100;
+            break;
+        case KNOB_WAITING_100:
+            if (isFull) knobState = KNOB_WAITING_0;
+            break;
+        case KNOB_WAITING_0:
+            if (isZero) {
+                knobState = KNOB_ACTIVE;
+                Serial.println("\n[KNOB] Unlocked! Manual Override Active.");
+            }
+            break;
+        case KNOB_ACTIVE:
+            if (isZero) {
+                if (knobZeroTimerMs == 0) knobZeroTimerMs = now;
+                else if (now - knobZeroTimerMs > 5000) { // 5 seconds timeout
+                    knobState = KNOB_LOCKED;
+                    knobZeroTimerMs = 0;
+                    currentControlMode = MODE_STOPPED;
+                    Serial.println("\n[KNOB] Relocked (5s at zero). Manual Control Disabled.");
+                    return;
+                }
+            } else {
+                knobZeroTimerMs = 0;
+            }
+
+            // Command speed proportional to knob position
+            float activePct = 0.0f;
+            if (knobPct > 0.05f) {
+                activePct = (knobPct - 0.05f) / 0.90f; // Scale 5%-95% to 0-100%
+                if (activePct > 1.0f) activePct = 1.0f;
+            }
+            
+            // Override with target speed
+            pid.target_rad_s = activePct * MAX_THRUSTER_RAD_S;
+            currentControlMode = MODE_CLOSED_LOOP_PID;
+            break;
+    }
+}
+
+// =============================================================================
 // ARDUINO SETUP & MAIN LOOP
 // =============================================================================
 void setup() {
@@ -665,7 +734,11 @@ void setup() {
     // 2. Initialize Tachometer Edge Timing Engine (GPIO 4, Reciprocal ISR)
     initSpeedSensor();
 
-    // 3. Ready
+    // 3. Initialize Analog Knob
+    pinMode(PIN_KNOB_ANALOG, INPUT);
+    analogReadResolution(12);
+
+    // 4. Ready
     printHelp();
 }
 
@@ -676,7 +749,10 @@ void loop() {
     // 2. Process USB Serial CLI commands
     readUserCommands();
 
-    // 3. Execute 100 Hz Discrete PID Velocity Loop (every 10,000 us)
+    // 3. Update Knob Logic
+    updateKnobLogic();
+
+    // 4. Execute 100 Hz Discrete PID Velocity Loop (every 10,000 us)
     uint32_t nowUs = micros();
     if (nowUs - lastPidTimeUs >= 10000) {
         lastPidTimeUs = nowUs;
