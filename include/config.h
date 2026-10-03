@@ -27,3 +27,7 @@
 // Polling and Telemetry Intervals
 #define TELEMETRY_INTERVAL_MS   3000
 #define COMMAND_POLL_INTERVAL_MS 1000
+
+#ifndef DEBUG_TELEMETRY
+#define DEBUG_TELEMETRY 1
+#endif

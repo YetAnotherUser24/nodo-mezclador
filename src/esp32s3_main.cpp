@@ -785,14 +785,16 @@ void loop() {
             float targetRpm = (pid.target_rad_s * 60.0f) / TWO_PI_CONST;
             float errRadS = pid.target_rad_s - velocity.rad_s;
 
-            // Serial.printf("[TELEMETRY] Status: %-11s | RPM: %6.1f / %4.0f | Duty: %4.1f%% (PWM: %4.1f%%) | Err: %+5.2f rad/s | Freq: %5.1f Hz\n",
-            //               getEscStatusStr(),
-            //               velocity.rpm,
-            //               targetRpm,
-            //               currentCommandedDuty * 100.0f,
-            //               currentCompensatedDuty * 100.0f,
-            //               errRadS,
-            //               velocity.freq_hz);
+#if DEBUG_TELEMETRY
+             Serial.printf("[TELEMETRY] Status: %-11s | RPM: %6.1f / %4.0f | Duty: %4.1f%% (PWM: %4.1f%%) | Err: %+5.2f rad/s | Freq: %5.1f Hz\n",
+                           getEscStatusStr(),
+                           velocity.rpm,
+                           targetRpm,
+                           currentCommandedDuty * 100.0f,
+                           currentCompensatedDuty * 100.0f,
+                           errRadS,
+                           velocity.freq_hz);
+#endif
 
             // Fetch any incoming commands from web dashboard
             SharedTelemetry cmd = getSharedCommand();
