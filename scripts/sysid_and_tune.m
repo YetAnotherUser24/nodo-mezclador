@@ -5,7 +5,7 @@ clear; clc; close all;
 %% 1. Load Data
 disp('Loading step_response.csv...');
 try
-    data = readtable('step_response.csv');
+    data = readtable('data/step_response.csv');
 catch
     error('Could not find step_response.csv. Did the Python logger run successfully?');
 end
@@ -36,11 +36,6 @@ sys_arx = arx(data_id, [2 1 1]);
 try
     sys_tf = tfest(data_id, 1, 0, NaN);
     
-    disp('--------------------------------------------------');
-    disp('Continuous Transfer Function (FOPDT) Estimated:');
-    sys_tf
-    disp('--------------------------------------------------');
-    
     % Extract for control design
     P = tf(sys_tf.Numerator, sys_tf.Denominator, 'InputDelay', sys_tf.IODelay);
 catch ME
@@ -50,11 +45,12 @@ end
 
 %% 3. Controller Tuning
 disp('Calculating Optimal PID Gains...');
-% We use a PI or PID controller. Thrusters usually only need PI because 
-% they are 1st order systems, but we'll ask MATLAB for a PIDF (PID with filter)
+% We use a PI controller. Thrusters usually only need PI because 
+% they are 1st order systems, and the dead time (delay) causes 
+% derivative (Kd) terms to go negative or become unstable.
 try
     opts = pidtuneOptions('DesignFocus', 'reference-tracking');
-    [C, info] = pidtune(P, 'PIDF', opts);
+    [C, info] = pidtune(P, 'PI', opts);
     
     disp('==================================================');
     disp('OPTIMAL PID GAINS (MATLAB pidtune):');
@@ -62,8 +58,13 @@ try
     disp(['Ki = ', num2str(C.Ki, 6)]);
     disp(['Kd = ', num2str(C.Kd, 6)]);
     disp('==================================================');
-    disp('Controller Info:');
-    disp(info);
+    
+    % Save gains to text file for easy copying
+    fid = fopen('results/models/pidtune_gains.txt', 'w');
+    fprintf(fid, '--- MATLAB PIDTUNE GAINS ---\n');
+    fprintf(fid, '--kp %g --ki %g --kd %g\n', C.Kp, C.Ki, C.Kd);
+    fclose(fid);
+    disp('Saved gains to results/models/pidtune_gains.txt for easy copying!');
     
     disp('Saving figures...');
     % 1. Raw Data Plot
@@ -74,7 +75,7 @@ try
     subplot(2,1,2);
     plot(t, y, 'r', 'LineWidth', 1.5);
     title('Output: Motor Velocity'); xlabel('Time (s)'); ylabel('Velocity (rad/s)'); grid on;
-    saveas(f1, 'sysid_raw_data.png');
+    saveas(f1, 'results/figures/pidtune/sysid_raw_data.png');
     
     % 2. Model Fit Plot (using lsim to avoid GUI figure spawning issues)
     f2 = figure('Visible','off');
@@ -85,7 +86,7 @@ try
     xlabel('Time (s)'); ylabel('Velocity (rad/s)');
     legend('Real Data', 'Model Prediction', 'Location', 'best');
     grid on;
-    saveas(f2, 'sysid_model_fit.png');
+    saveas(f2, 'results/figures/pidtune/sysid_model_fit.png');
     
     % 3. Closed Loop Simulation Plot
     f3 = figure('Visible','off');
@@ -93,9 +94,9 @@ try
     step(T_closed);
     title('Theoretical Closed-Loop Step Response (with Optimal Gains)');
     grid on;
-    saveas(f3, 'sysid_closed_loop.png');
+    saveas(f3, 'results/figures/pidtune/sysid_closed_loop.png');
     
-    save('sysid_results.mat', 'sys_tf', 'C', 'P');
+    save('results/models/sysid_results_pidtune.mat', 'sys_tf', 'C', 'P');
 
 
 catch

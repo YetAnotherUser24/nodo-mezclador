@@ -19,7 +19,7 @@ def main():
     parser.add_argument('--port', type=str, help='COM port (e.g., COM16). Auto-detects if omitted.')
     parser.add_argument('--duty', type=float, default=0.5, help='Target open-loop duty for the step response (0.0 - 1.0). Default: 0.5')
     parser.add_argument('--duration', type=float, default=5.0, help='How many seconds to record. Default: 5.0')
-    parser.add_argument('--output', type=str, default='scripts/step_response.csv', help='Output CSV file name. Default: step_response.csv')
+    parser.add_argument('--output', type=str, default='scripts/data/step_response.csv', help='Output CSV file name. Default: step_response.csv')
     args = parser.parse_args()
 
     port = args.port
@@ -32,7 +32,13 @@ def main():
 
     print(f"Connecting to {port} at 115200 baud...")
     try:
-        ser = serial.Serial(port, 115200, timeout=0.1)
+        ser = serial.Serial()
+        ser.port = port
+        ser.baudrate = 115200
+        ser.timeout = 0.1
+        ser.setDTR(False)
+        ser.setRTS(False)
+        ser.open()
     except Exception as e:
         print(f"Failed to open port {port}: {e}")
         print("Make sure the Serial Monitor in PlatformIO is CLOSED before running this script!")
@@ -46,18 +52,23 @@ def main():
 
     print("Activating SYSID Mode (50Hz telemetry)...")
     ser.write(b"SYSID ON\n")
-    time.sleep(0.5)
+    time.sleep(0.1)
     ser.reset_input_buffer()
 
-    print(f"Executing step response: DUTY {args.duty} for {args.duration} seconds...")
-    cmd = f"DUTY {args.duty}\n".encode('ascii')
-    ser.write(cmd)
-
+    print(f"Recording zero-state for 0.5s, then executing step response: DUTY {args.duty} for {args.duration} seconds...")
+    
     start_time = time.time()
+    step_applied = False
     data_points = []
 
     try:
-        while time.time() - start_time < args.duration:
+        while time.time() - start_time < (args.duration + 0.5):
+            # Apply step after 0.5 seconds
+            if not step_applied and (time.time() - start_time >= 0.5):
+                cmd = f"DUTY {args.duty}\n".encode('ascii')
+                ser.write(cmd)
+                step_applied = True
+                
             line = ser.readline().decode('ascii', errors='ignore').strip()
             if line.startswith("SYSID,"):
                 parts = line.split(',')

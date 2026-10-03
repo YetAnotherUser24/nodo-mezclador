@@ -13,8 +13,8 @@ High-performance, closed-loop angular velocity controller for the **BlueRobotics
 |  [ ESP32-S3 Controller ]                                       [ SNR8503M BLDC Driver ] |
 |  - 100 Hz Discrete PID (rad/s)                                  - 3-Phase Inverter      |
 |  - Exact Analytical Linearization                               - BEMF Zero-Crossing    |
-|  - 10 kHz 12-bit LEDC PWM (GPIO 5) -> [Open-Drain Stage] ---->  - VSP Analog/PWM Input  |
-|  - Reciprocal ISR Tachometer (GPIO 4) <-- [1k/2k Divider] <---  - FG Tachometer Output  |
+|  - 10 kHz 10-bit LEDC PWM (GPIO 13) -> [Open-Drain Stage] ---->  - VSP Analog/PWM Input |
+|  - Reciprocal ISR Tachometer (GPIO 7) <-- [1k/2k Divider] <---  - FG Tachometer Output  |
 |                                                                          |              |
 |                                                                   [ T-200 Thruster ]    |
 |                                                                   - 7 Pole Pairs BLDC   |
@@ -23,7 +23,7 @@ High-performance, closed-loop angular velocity controller for the **BlueRobotics
 
 ### Key Engineering Features
 1. **Actuation (Option B Open-Drain + Stiff Pull-Up)**:
-   - Hardware **10 kHz LEDC PWM** with **12-bit resolution** (4,096 discrete steps; $0.024\%$ step size).
+   - Hardware **10 kHz LEDC PWM** with **10-bit resolution** (1,024 discrete steps; $0.098\%$ step size).
    - A discrete N-channel MOSFET (`2N7002` / `BSS138`) or NPN transistor (`2N3904`) with a stiff $330\ \Omega$ pull-up resistor to the driver's $+5\text{V}$ rail.
 2. **Analytical Software Linearization Pre-Compensator**:
    - Closed-form mathematical inverse function completely cancels the non-linearity introduced by the driver's internal $10\text{k}\Omega / 20\text{k}\Omega / 10\ \mu\text{F}$ low-pass filter ($0.0000\%$ mathematical error).
@@ -75,9 +75,9 @@ High-performance, closed-loop angular velocity controller for the **BlueRobotics
 |                  |         | (Source/Emit)   |                       |
 |                  |        GND                |                       |
 |                  |                           |                       |
-|     GPIO 5 (PWM) +--[ 100Ω ]-> (Gate/Base)   |                       |
+|     GPIO 13 (PWM) +--[ 100Ω ]-> (Gate/Base)  |                       |
 |                  |                           |                       |
-|   GPIO 4 (Pulse) +<----+                     | Pin 4: FG (Pulse Out) |
+|   GPIO 7 (Pulse) +<----+                     | Pin 4: FG (Pulse Out) |
 |                  |     |                     |                       |
 |                  |   [ 1kΩ ]                 +-----------------------+
 |                  |     |

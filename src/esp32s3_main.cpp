@@ -471,16 +471,14 @@ void updatePidLoop() {
     pid.integral += pid.Ki * error * pid.Ts;
     pid.integral = constrain(pid.integral, -0.5f, 1.0f);
 
-    // Derivative on measurement (eliminates setpoint derivative kick)
-    float d_meas = (velocity.rad_s - pid.prev_meas_rad_s) / pid.Ts;
-    pid.prev_meas_rad_s = velocity.rad_s;
-    float d_term = -pid.Kd * d_meas;
-
-    // Feedforward estimate: approximate linear duty estimate from target velocity
-    float ff_term = (pid.target_rad_s / MAX_THRUSTER_RAD_S) * 0.70f;
+    // Derivative term removed for pure PI operation.
+    // (Prevents IEEE-754 0.0 * NaN = NaN poisoning if tachometer ever glitches)
+    
+    // Feedforward disabled: let the PI loop do 100% of the work to match MATLAB LTI models.
+    float ff_term = 0.0f;
 
     // Raw control output
-    float u_raw = p_term + pid.integral + d_term + ff_term;
+    float u_raw = p_term + pid.integral + ff_term;
     float u_clamped = constrain(u_raw, 0.0f, 1.0f);
 
     // Slew rate limiter

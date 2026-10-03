@@ -22,7 +22,7 @@ def main():
     parser.add_argument('--kd', type=float, required=True, help='Derivative Gain (Kd)')
     parser.add_argument('--rpm', type=float, default=1500.0, help='Target RPM for step response. Default: 1500')
     parser.add_argument('--duration', type=float, default=5.0, help='Duration to record (s). Default: 5.0')
-    parser.add_argument('--output', type=str, default='scripts/closed_loop_test.csv', help='Output CSV file')
+    parser.add_argument('--output', type=str, default='scripts/data/closed_loop_test.csv', help='Output CSV file')
     args = parser.parse_args()
 
     port = args.port or find_com_port()
@@ -32,7 +32,13 @@ def main():
 
     print(f"Connecting to {port}...")
     try:
-        ser = serial.Serial(port, 115200, timeout=0.1)
+        ser = serial.Serial()
+        ser.port = port
+        ser.baudrate = 115200
+        ser.timeout = 0.1
+        ser.setDTR(False)
+        ser.setRTS(False)
+        ser.open()
     except Exception as e:
         print(f"Failed to open port {port}: {e}")
         sys.exit(1)
@@ -47,17 +53,23 @@ def main():
 
     print("Activating SYSID Mode...")
     ser.write(b"SYSID ON\n")
-    time.sleep(0.5)
+    time.sleep(0.1)
     ser.reset_input_buffer()
 
-    print(f"Testing Closed-Loop Step Response: Target = {args.rpm} RPM...")
-    ser.write(f"RPM {args.rpm}\n".encode('ascii'))
+    print(f"Recording zero-state for 0.5s, then executing Closed-Loop Step Response: Target = {args.rpm} RPM...")
 
     start_time = time.time()
+    step_applied = False
     data_points = []
+    current_rpm = 0.0
 
     try:
-        while time.time() - start_time < args.duration:
+        while time.time() - start_time < (args.duration + 0.5):
+            if not step_applied and (time.time() - start_time >= 0.5):
+                ser.write(f"RPM {args.rpm}\n".encode('ascii'))
+                current_rpm = args.rpm
+                step_applied = True
+                
             line = ser.readline().decode('ascii', errors='ignore').strip()
             if line.startswith("SYSID,"):
                 parts = line.split(',')
@@ -65,6 +77,7 @@ def main():
                     _, t_ms, target_duty, comp_duty, rad_s = parts
                     data_points.append({
                         'Time_ms': t_ms,
+                        'Setpoint_RPM': current_rpm,
                         'Target_Duty': target_duty,
                         'Compensated_Duty': comp_duty,
                         'Rad_s': rad_s
@@ -84,12 +97,13 @@ def main():
 
     t0 = int(data_points[0]['Time_ms'])
     with open(args.output, mode='w', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=['Time_s', 'Target_Duty', 'Compensated_Duty', 'Rad_s'])
+        writer = csv.DictWriter(f, fieldnames=['Time_s', 'Setpoint_RPM', 'Target_Duty', 'Compensated_Duty', 'Rad_s'])
         writer.writeheader()
         for row in data_points:
             t_s = (int(row['Time_ms']) - t0) / 1000.0
             writer.writerow({
                 'Time_s': f"{t_s:.3f}",
+                'Setpoint_RPM': row['Setpoint_RPM'],
                 'Target_Duty': row['Target_Duty'],
                 'Compensated_Duty': row['Compensated_Duty'],
                 'Rad_s': row['Rad_s']
