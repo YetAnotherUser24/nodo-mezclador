@@ -1,0 +1,29 @@
+#pragma once
+
+#include <Arduino.h>
+
+#define OTA_ENABLED 1
+
+// ---------------------------------------------------------
+// WiFi Credentials
+// ---------------------------------------------------------
+#define WIFI_SSID       "WifiDev"
+#define WIFI_PASSWORD   "rpidev24"
+
+// ---------------------------------------------------------
+// OTA Configuration
+// ---------------------------------------------------------
+#define OTA_HOSTNAME    "mixer-t200"
+#define OTA_PASSWORD    "admin123"
+
+// ---------------------------------------------------------
+// Web Dashboard API
+// ---------------------------------------------------------
+#define API_BASE_URL    "http://192.168.1.100:3000" // Replace with actual backend IP (usually port 3000 for Next.js)
+#define API_TELEMETRY   API_BASE_URL "/api/telemetry/motor"
+#define API_COMMANDS    API_BASE_URL "/api/commands/pending"
+#define DEVICE_KEY      "t200-mixer-key-123" // Replace with actual device key in DB
+
+// Polling and Telemetry Intervals
+#define TELEMETRY_INTERVAL_MS   500
+#define COMMAND_POLL_INTERVAL_MS 1000

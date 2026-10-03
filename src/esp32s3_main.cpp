@@ -27,6 +27,7 @@
 
 #include <Arduino.h>
 #include <math.h>
+#include "cloud_worker.h"
 
 // =============================================================================
 // HARDWARE PIN DEFINITIONS & CONSTANTS
@@ -368,9 +369,9 @@ struct PidController {
 
 // Initial conservative tuning parameters for T-200 thruster
 static PidController pid = {
-    .Kp = 0.0012f,
-    .Ki = 0.0035f,
-    .Kd = 0.00004f,
+    .Kp = 0.00274565f,
+    .Ki = 0.00642846f,
+    .Kd = 0.0f,
     .Ts = 0.010f,          // 10 ms = 100 Hz
     .target_rad_s = 0.0f,
     .integral = 0.0f,
@@ -746,7 +747,10 @@ void setup() {
     pinMode(PIN_KNOB_ANALOG, INPUT);
     analogReadResolution(12);
 
-    // 4. Ready
+    // 4. Start Network Tasks (Core 0)
+    startCloudWorker();
+
+    // 5. Ready
     printHelp();
 }
 
@@ -767,7 +771,7 @@ void loop() {
         updatePidLoop();
     }
 
-    // 4. Periodic Telemetry Streaming
+    // 4. Periodic Telemetry Streaming & Web Dashboard Polling
     uint32_t nowMs = millis();
     uint32_t teleDelay = sysidMode ? 20 : 500; // 50 Hz for SysID, 2 Hz normal
     if (nowMs - lastTelemetryTimeMs >= teleDelay) {
@@ -789,6 +793,30 @@ void loop() {
                           currentCompensatedDuty * 100.0f,
                           errRadS,
                           velocity.freq_hz);
+
+            // Fetch any incoming commands from web dashboard
+            SharedTelemetry cmd = getSharedCommand();
+            static float lastCmdRadS = -1.0f;
+            if (cmd.target_rad_s != lastCmdRadS && cmd.target_rad_s >= 0.0f) {
+                lastCmdRadS = cmd.target_rad_s;
+                pid.target_rad_s = cmd.target_rad_s;
+                currentControlMode = MODE_CLOSED_LOOP_PID;
+                Serial.printf("[WEB] Received new target: %.2f rad/s\n", pid.target_rad_s);
+            }
+
+            // Push current state to network task
+            SharedTelemetry telemPush;
+            telemPush.target_rpm = targetRpm;
+            telemPush.actual_rpm = velocity.rpm;
+            telemPush.target_rad_s = pid.target_rad_s;
+            telemPush.actual_rad_s = velocity.rad_s;
+            telemPush.commanded_duty = currentCommandedDuty;
+            telemPush.pso_kp = pid.Kp;
+            telemPush.pso_ki = pid.Ki;
+            telemPush.pso_kd = pid.Kd;
+            telemPush.status_code = lastFaultCode;
+            telemPush.is_running = (currentControlMode != MODE_STOPPED);
+            updateSharedTelemetry(telemPush);
         }
 
 #if defined(PIN_LED) && (PIN_LED >= 0)
