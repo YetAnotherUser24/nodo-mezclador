@@ -257,5 +257,48 @@ The firmware provides an interactive text-based console over USB Serial ($115200
 ### Phase 3: Closed-Loop PID Tuning
 1. Send `RPM 1000` ($\approx 104.7\text{ rad/s}$) to engage the closed-loop controller.
 2. If the thruster oscillates, reduce $K_p$ using `TUNE`.
-3. If steady-state error persists, gradually increase $K_i$.
 4. Test step responses from `RPM 1000` $\rightarrow$ `RPM 2000` to verify settling time and disturbance rejection.
+
+---
+
+## 7. System Identification & Optimization Toolchain
+
+We developed a completely automated Python/MATLAB pipeline (`pipeline.py`) to extract empirical physics models from the physical thruster and use Metaheuristics to find the global optimal PI gains.
+
+### How to use the Pipeline
+You can run the entire toolchain sequentially (Data -> Identify -> Tune -> Validate) or execute isolated stages:
+```bash
+# Run the complete automated pipeline using the Return-to-Zero Staircase method
+python pipeline.py full --method stair
+
+# Run isolated sections
+python pipeline.py data --method prbs
+python pipeline.py ident-pso
+python pipeline.py run --rpm 1500
+```
+
+### A. Data Acquisition Techniques
+The pipeline supports three independent signal-injection techniques to map the physics of the motor:
+1. **Single-Step (`--method step`)**: Traditional approach. Hits the motor with a single 60% duty cycle step. Good for local operating points, but blind to other speeds.
+2. **PRBS (`--method prbs`)**: Pseudo-Random Binary Sequence. Toggles random duty cycles at random intervals. Forces the motor to reveal its high-pass and low-pass frequency responses across the entire speed range.
+3. **Return-to-Zero Pulse-Step (`--method stair`)**: Steps up through incremental duty cycles (0.2, 0.4, 0.6, 0.8), but fundamentally forces the motor to brake to a dead stop (`0.0 Duty`) between every step. This perfectly isolates **Static Friction (Stiction)** and absolute inertia mapping.
+
+### B. Plant Identification
+The MATLAB backend (`scripts/sysid_and_tune.m`) automatically ingests the CSV telemetry and calculates five distinct models:
+- Continuous: **FOPDT**
+- Discrete Polynomials: **ARX(1,1,1), ARX(2,2,1), ARMAX(2,2,2,1), OE(2,2,1)**
+
+The script utilizes the **Akaike Information Criterion (AIC)** and **Final Prediction Error (FPE)** to mathematically penalize overfitting and select the true most optimal model order (which consistently falls on **ARMAX(2,2,2,1)** for this thruster).
+
+### C. Metaheuristic Optimization
+Once the ARMAX model is extracted, `scripts/advanced_thesis_tuning.m` runs three separate optimization algorithms to find the ultimate PI gains ($K_p$, $K_i$):
+1. **Nelder-Mead (`fminsearch`) with ITAE**: A Local Search algorithm that often gets stuck in mathematical local minima (traps).
+2. **Particle Swarm Optimization (PSO) with ITAE**: A Global Search swarm algorithm that successfully escapes local minima to find the theoretical minimum error limit of the system.
+3. **PSO with Custom Penalty**: A global swarm optimizing a custom cost function that brutally penalizes any overshoot above 2%. 
+
+### Academic Discovery: The Gain Scheduling Imperative
+By running the **Return-to-Zero Pulse-Step** test and plotting the resulting PSO validation, we proved a critical thesis conclusion: **A single Linear Model (LTI) fundamentally cannot govern a highly non-linear underwater thruster.** 
+
+Because aerodynamic drag is quadratic ($v^2$) and the static friction deadband requires massive energy to break, a single set of PI gains will always result in massive overshoot (up to 145%) at certain speeds. 
+
+**Next Steps**: We will partition the `stair` dataset into three perfectly linear zones (Low, Mid, High) and implement a **Gain Scheduler** inside `esp32s3_main.cpp`.

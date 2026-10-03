@@ -108,15 +108,13 @@ disp('Saved isolated best model fit to results/figures/pso/sysid_model_fit.png')
 
 %% 3. Phase 3: Cost-Function Optimization (ITAE with PSO)
 disp('--------------------------------------------------');
-disp('PHASE 3: ITAE Optimization using PSO / Metaheuristics');
+disp('PHASE 3: Objective Functions & Metaheuristics Optimization');
 disp('Using strictly DISCRETE control (no d2c conversion needed!)');
 
-% ITAE Cost Function Definition (Discrete Time)
+% 1. ITAE Cost Function Definition (Discrete Time)
     function J = itae_cost_discrete(K, P, Ts)
-        % Create Discrete PI (matches ESP32 implementation!)
         C = pid(K(1), K(2), 0, 'Ts', Ts, 'IFormula', 'BackwardEuler');
         T = feedback(C * P, 1);
-        
         t_sim = 0:Ts:5;
         try
             [y_sim, ~] = step(T, t_sim);
@@ -127,26 +125,80 @@ disp('Using strictly DISCRETE control (no d2c conversion needed!)');
         end
     end
 
-% PSO requires bounds
-lb = [0.0001, 0.0001]; % Kp, Ki only
+% 2. Custom Multi-Objective Cost Function (Heavy Overshoot Penalty)
+    function J = custom_cost_discrete(K, P, Ts)
+        C = pid(K(1), K(2), 0, 'Ts', Ts, 'IFormula', 'BackwardEuler');
+        T = feedback(C * P, 1);
+        t_sim = 0:Ts:5;
+        try
+            si = stepinfo(T, 'SettlingTimeThreshold', 0.05);
+            [y_sim, ~] = step(T, t_sim);
+            
+            OS = si.Overshoot;
+            if isnan(OS), OS = 100; end
+            
+            % If it overshoots by more than 2%, massive penalty!
+            if OS > 2.0
+                penalty = 1000 * OS;
+            else
+                penalty = 0;
+            end
+            
+            e = 1 - y_sim;
+            ITAE = sum(t_sim(:) .* abs(e(:))) * Ts;
+            
+            J = ITAE + penalty;
+        catch
+            J = 1e6;
+        end
+    end
+
+lb = [0.0001, 0.0001]; 
 ub = [0.1, 0.1];
+opts_pso = optimoptions('particleswarm', 'SwarmSize', 30, 'MaxIterations', 30, 'Display', 'off');
+opts_fmin = optimset('Display','off', 'MaxIter', 200);
+K_init = [0.001, 0.001];
 
-try
-    disp('Attempting Particle Swarm Optimization (PSO)...');
-    opts = optimoptions('particleswarm', 'SwarmSize', 30, 'MaxIterations', 30, 'Display', 'off');
-    K_opt = particleswarm(@(K) itae_cost_discrete(K, best_model, Ts), 2, lb, ub, opts);
-    disp('Optimization Algorithm: Particle Swarm (PSO) - Completed');
-catch
-    disp('Global Optimization Toolbox not found or failed.');
-    disp('Falling back to Nelder-Mead (fminsearch) to minimize ITAE...');
-    opts = optimset('Display','off', 'MaxIter', 200);
-    K_init = [0.001, 0.001];
-    K_opt = fminsearch(@(K) itae_cost_discrete(K, best_model, Ts), K_init, opts);
-    disp('Optimization Algorithm: Nelder-Mead (fminsearch) - Completed');
-end
+disp('1. Running Nelder-Mead (fminsearch) with ITAE (Local Search)...');
+K_fmin = fminsearch(@(K) itae_cost_discrete(K, best_model, Ts), K_init, opts_fmin);
 
-Kp_opt = K_opt(1);
-Ki_opt = K_opt(2);
+disp('2. Running Particle Swarm (PSO) with ITAE (Global Search)...');
+K_pso_itae = particleswarm(@(K) itae_cost_discrete(K, best_model, Ts), 2, lb, ub, opts_pso);
+
+disp('3. Running Particle Swarm (PSO) with Custom Objective (Global Search)...');
+K_pso_custom = particleswarm(@(K) custom_cost_discrete(K, best_model, Ts), 2, lb, ub, opts_pso);
+
+% --- Simulate and Plot the Comparison ---
+C_fmin = pid(K_fmin(1), K_fmin(2), 0, 'Ts', Ts, 'IFormula', 'BackwardEuler');
+C_pso_itae = pid(K_pso_itae(1), K_pso_itae(2), 0, 'Ts', Ts, 'IFormula', 'BackwardEuler');
+C_pso_custom = pid(K_pso_custom(1), K_pso_custom(2), 0, 'Ts', Ts, 'IFormula', 'BackwardEuler');
+
+T_fmin = feedback(C_fmin * best_model, 1);
+T_pso_itae = feedback(C_pso_itae * best_model, 1);
+T_pso_custom = feedback(C_pso_custom * best_model, 1);
+
+fig2 = figure('Name', 'Optimization Algorithm Comparison', 'Position', [150, 150, 800, 500], 'Visible', 'off');
+t_sim = 0:Ts:5;
+[y_fmin, ~] = step(T_fmin, t_sim);
+[y_itae, ~] = step(T_pso_itae, t_sim);
+[y_custom, ~] = step(T_pso_custom, t_sim);
+
+plot(t_sim, y_fmin, 'r--', 'LineWidth', 1.5); hold on;
+plot(t_sim, y_itae, 'b-', 'LineWidth', 2);
+plot(t_sim, y_custom, 'g-.', 'LineWidth', 2);
+yline(1, 'k--', 'Target');
+title('Optimization Algorithm Comparison on ARMAX Model');
+xlabel('Time (s)'); ylabel('Amplitude');
+legend('fminsearch (ITAE)', 'PSO (ITAE)', 'PSO (Custom Overshoot Penalty)', 'Location', 'Southeast');
+grid on;
+
+if ~exist('results/figures/pso', 'dir'), mkdir('results/figures/pso'); end
+saveas(fig2, 'results/figures/pso/optimization_comparison.png');
+disp('Saved comparison plot to results/figures/pso/optimization_comparison.png');
+
+% Use PSO ITAE as the official export (Standard Benchmark)
+Kp_opt = K_pso_itae(1);
+Ki_opt = K_pso_itae(2);
 Kd_opt = 0;
 
 fprintf('\n==================================================\n');
@@ -156,26 +208,16 @@ fprintf('Ki = %g\n', Ki_opt);
 fprintf('Kd = %g\n', Kd_opt);
 fprintf('==================================================\n');
 
-% Save gains to text file for easy copying
 fid = fopen('results/models/pso_gains.txt', 'w');
-fprintf(fid, '--- ITAE PSO GAINS ---\n');
-fprintf(fid, '--kp %g --ki %g --kd %g\n', Kp_opt, Ki_opt, Kd_opt);
+fprintf(fid, '%g,%g,%g\n', Kp_opt, Ki_opt, Kd_opt);
 fclose(fid);
 disp('Saved gains to results/models/pso_gains.txt for easy copying!');
 
 % Save the model and ITAE optimal controller for plot_validation
-C_opt = pid(Kp_opt, Ki_opt, Kd_opt, 'Ts', Ts, 'IFormula', 'BackwardEuler');
+C_opt = C_pso_itae;
 P = best_model;
 sys_tf = sys_fopdt; % Keep FOPDT for reference
 C = C_opt;
 save('results/models/sysid_results.mat', 'sys_tf', 'C_opt', 'C', 'P');
-
-% Plot final step response comparison
-f4 = figure('Visible', 'off');
-T_itae = feedback(C_opt * best_model, 1);
-step(T_itae);
-title('ITAE Optimized Closed-Loop Step Response (PI)');
-grid on;
-saveas(f4, 'results/figures/pso/sysid_itae_step.png');
 
 disp('Script finished successfully. Run plot_validation.m to test it on hardware!');
