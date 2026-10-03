@@ -500,6 +500,7 @@ void updatePidLoop() {
 static char pcRxBuffer[64];
 static uint8_t pcRxIndex = 0;
 static uint32_t lastTelemetryTimeMs = 0;
+static bool sysidMode = false;
 
 void printHelp() {
     Serial.println("\n--- T-200 Thruster Controller CLI ---");
@@ -508,6 +509,7 @@ void printHelp() {
     Serial.println("  DUTY <0.0 - 1.0>    : Open-loop throttle override (e.g. 'DUTY 0.35')");
     Serial.println("  STOP                : Safely stop thruster");
     Serial.println("  TUNE <Kp> <Ki> <Kd> : Update PID gains live (e.g. 'TUNE 0.0015 0.004 0.00005')");
+    Serial.println("  SYSID ON/OFF        : Toggle 50Hz compact CSV telemetry for System ID");
     Serial.println("  TEST HIGH           : Force GPIO HIGH (Should STOP the motor via transistor)");
     Serial.println("  TEST LOW            : Force GPIO LOW (Should FULL SPEED the motor via transistor)");
     Serial.println("  STATUS              : Print full controller & telemetry snapshot");
@@ -612,6 +614,14 @@ void handleCommand(char* cmd) {
     }
     else if (strncasecmp(cmd, "STATUS", 6) == 0) {
         printStatus();
+    }
+    else if (strncasecmp(cmd, "SYSID ON", 8) == 0) {
+        sysidMode = true;
+        Serial.println("SYSID_MODE,Time_ms,Target_Duty,Compensated_Duty,Measured_RPM");
+    }
+    else if (strncasecmp(cmd, "SYSID OFF", 9) == 0) {
+        sysidMode = false;
+        Serial.println("[OK] SysID Mode OFF. Normal telemetry restored.");
     }
     else if (strncasecmp(cmd, "HELP", 4) == 0) {
         printHelp();
@@ -759,22 +769,29 @@ void loop() {
         updatePidLoop();
     }
 
-    // 4. Periodic Telemetry Streaming (every 500 ms)
+    // 4. Periodic Telemetry Streaming
     uint32_t nowMs = millis();
-    if (nowMs - lastTelemetryTimeMs >= 500) {
+    uint32_t teleDelay = sysidMode ? 20 : 500; // 50 Hz for SysID, 2 Hz normal
+    if (nowMs - lastTelemetryTimeMs >= teleDelay) {
         lastTelemetryTimeMs = nowMs;
 
-        float targetRpm = (pid.target_rad_s * 60.0f) / TWO_PI_CONST;
-        float errRadS = pid.target_rad_s - velocity.rad_s;
+        if (sysidMode) {
+            // Fast compact CSV output for System ID
+            Serial.printf("SYSID,%lu,%.4f,%.4f,%.2f\n", 
+                          nowMs, currentCommandedDuty, currentCompensatedDuty, velocity.rpm);
+        } else {
+            float targetRpm = (pid.target_rad_s * 60.0f) / TWO_PI_CONST;
+            float errRadS = pid.target_rad_s - velocity.rad_s;
 
-        Serial.printf("[TELEMETRY] Status: %-11s | RPM: %6.1f / %4.0f | Duty: %4.1f%% (PWM: %4.1f%%) | Err: %+5.2f rad/s | Freq: %5.1f Hz\n",
-                      getEscStatusStr(),
-                      velocity.rpm,
-                      targetRpm,
-                      currentCommandedDuty * 100.0f,
-                      currentCompensatedDuty * 100.0f,
-                      errRadS,
-                      velocity.freq_hz);
+            Serial.printf("[TELEMETRY] Status: %-11s | RPM: %6.1f / %4.0f | Duty: %4.1f%% (PWM: %4.1f%%) | Err: %+5.2f rad/s | Freq: %5.1f Hz\n",
+                          getEscStatusStr(),
+                          velocity.rpm,
+                          targetRpm,
+                          currentCommandedDuty * 100.0f,
+                          currentCompensatedDuty * 100.0f,
+                          errRadS,
+                          velocity.freq_hz);
+        }
 
 #if defined(PIN_LED) && (PIN_LED >= 0)
         if (velocity.rad_s > 0.5f) {
