@@ -7,6 +7,7 @@
 
 #if defined(OTA_ENABLED) && OTA_ENABLED
 #include <ArduinoOTA.h>
+static bool otaInProgress = false;
 #endif
 
 static SharedTelemetry s_sharedTelem;
@@ -47,56 +48,95 @@ static void updateSharedCommand(const SharedTelemetry& cmd) {
 }
 
 void cloudWorkerTask(void* parameter) {
-    Serial.print("[WIFI] Connecting to ");
+    Serial.print("[WIFI] Initializing for ");
     Serial.println(WIFI_SSID);
 
+    // 1. Forzar modo Estación
     WiFi.mode(WIFI_STA);
+    // 2. Delegar la reconexión básica al hardware
+    WiFi.setAutoReconnect(true);
+    // 3. Estabilidad de hardware
+    WiFi.setTxPower(WIFI_POWER_8_5dBm);
+    // 4. Iniciar (SOLO UNA VEZ)
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-    
-    unsigned long startAttempt = millis();
-    while (WiFi.status() != WL_CONNECTED && millis() - startAttempt < 10000) {
-        delay(500);
-        Serial.print(".");
-    }
-    
-    if (WiFi.status() == WL_CONNECTED) {
-        Serial.println("\n[WIFI] Connected!");
-        Serial.print("[WIFI] IP Address: ");
-        Serial.println(WiFi.localIP());
 
-#if defined(OTA_ENABLED) && OTA_ENABLED
-        ArduinoOTA.setHostname(OTA_HOSTNAME);
-        ArduinoOTA.setPassword(OTA_PASSWORD);
-        ArduinoOTA.onStart([]() { Serial.println("\n[OTA] Start updating..."); });
-        ArduinoOTA.onEnd([]() { Serial.println("\n[OTA] End"); });
-        ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-            Serial.printf("[OTA] Progress: %u%%\r", (progress / (total / 100)));
-        });
-        ArduinoOTA.onError([](ota_error_t error) {
-            Serial.printf("[OTA] Error[%u]: ", error);
-            if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
-            else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
-            else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
-            else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
-            else if (error == OTA_END_ERROR) Serial.println("End Failed");
-        });
-        ArduinoOTA.begin();
-        Serial.println("[OTA] Service initialized.");
-#endif
-    } else {
-        Serial.println("\n[WIFI] Connection failed. Task continuing for OTA fallback/reconnect.");
-    }
+    unsigned long lastWifiRetry = millis();
+    bool wasConnected = false;
+    bool otaConfigured = false;
 
     while (true) {
-        // Reconnect if connection is lost
         if (WiFi.status() != WL_CONNECTED) {
-            WiFi.reconnect();
-            delay(5000);
+            if (wasConnected) {
+                Serial.println("[Red] Desconectado. Auto-reconnect activo...");
+                wasConnected = false;
+                lastWifiRetry = millis();
+            }
+            
+            // SEGURO DE VIDA: Si el AutoReconnect interno falla por 30 segundos
+            if (millis() - lastWifiRetry > 30000) {
+                Serial.println("[Red] Pila WiFi atascada. Reiniciando hardware de red...");
+                WiFi.disconnect(true);
+                vTaskDelay(pdMS_TO_TICKS(100));
+                WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+                lastWifiRetry = millis();
+            }
+        } else {
+            // Cuando se reconecta exitosamente
+            if (!wasConnected) {
+                Serial.printf("[Red] Conectado. IP: %s\n", WiFi.localIP().toString().c_str());
+                wasConnected = true;
+
+#if defined(OTA_ENABLED) && OTA_ENABLED
+                if (!otaConfigured) {
+                    ArduinoOTA.setHostname(OTA_HOSTNAME);
+                    if (strlen(OTA_PASSWORD) > 0) {
+                        ArduinoOTA.setPassword(OTA_PASSWORD);
+                    }
+                    ArduinoOTA.onStart([]() { 
+                        otaInProgress = true;
+                        Serial.println("\n[OTA] Start updating..."); 
+                        SharedTelemetry cmd = getSharedCommand();
+                        cmd.target_rad_s = 0.0f;
+                        cmd.target_rpm = 0.0f;
+                        updateSharedCommand(cmd); // DETIENE MOTORES
+                    });
+                    ArduinoOTA.onEnd([]() { 
+                        otaInProgress = false;
+                        Serial.println("\n[OTA] End"); 
+                    });
+                    ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+                        Serial.printf("[OTA] Progress: %u%%\r", (progress / (total / 100)));
+                    });
+                    ArduinoOTA.onError([](ota_error_t error) {
+                        otaInProgress = false;
+                        Serial.printf("[OTA] Error[%u]: ", error);
+                        if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+                        else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+                        else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+                        else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+                        else if (error == OTA_END_ERROR) Serial.println("End Failed");
+                    });
+                    ArduinoOTA.begin();
+                    Serial.println("[OTA] Service initialized.");
+                    otaConfigured = true;
+                }
+#endif
+            }
+        }
+
+        // Si no estamos conectados, no hacemos HTTP
+        if (!wasConnected) {
+            vTaskDelay(pdMS_TO_TICKS(100));
             continue;
         }
 
 #if defined(OTA_ENABLED) && OTA_ENABLED
         ArduinoOTA.handle();
+        // Skip blocking HTTP tasks if OTA is actively receiving a payload
+        if (otaInProgress) {
+            vTaskDelay(pdMS_TO_TICKS(10));
+            continue;
+        }
 #endif
 
         unsigned long now = millis();
@@ -109,6 +149,7 @@ void cloudWorkerTask(void* parameter) {
             WiFiClientSecure client;
             client.setInsecure(); // Accept any certificate
             HTTPClient http;
+            http.setTimeout(5000); // Prevent infinite blocking
             http.begin(client, API_TELEMETRY);
             http.addHeader("Content-Type", "application/json");
             http.addHeader("X-Device-Key", DEVICE_KEY);
