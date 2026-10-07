@@ -4,6 +4,8 @@
 #include <WiFiClientSecure.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
+#include <time.h>
+#include <sys/time.h>
 
 #if defined(OTA_ENABLED) && OTA_ENABLED
 #include <ArduinoOTA.h>
@@ -86,6 +88,10 @@ void cloudWorkerTask(void* parameter) {
                 Serial.printf("[Red] Conectado. IP: %s\n", WiFi.localIP().toString().c_str());
                 wasConnected = true;
 
+                // Sync time via NTP for precise ACK timestamps
+                configTime(0, 0, "pool.ntp.org", "time.nist.gov");
+                Serial.println("[NTP] Time synchronization requested.");
+
 #if defined(OTA_ENABLED) && OTA_ENABLED
                 if (!otaConfigured) {
                     ArduinoOTA.setHostname(OTA_HOSTNAME);
@@ -141,10 +147,12 @@ void cloudWorkerTask(void* parameter) {
 
         unsigned long now = millis();
 
-        // 1. Telemetry Push (POST)
-        if (now - lastTelemetryPush >= TELEMETRY_INTERVAL_MS) {
+        // 1. Telemetry Push (POST) / Heartbeat
+        SharedTelemetry currentTelem = getSharedTelemetry();
+        unsigned long currentPushInterval = currentTelem.is_running ? TELEMETRY_INTERVAL_MS : 20000;
+        
+        if (now - lastTelemetryPush >= currentPushInterval) {
             lastTelemetryPush = now;
-            SharedTelemetry currentTelem = getSharedTelemetry();
 
             WiFiClientSecure client;
             client.setInsecure(); // Accept any certificate
@@ -227,6 +235,14 @@ void cloudWorkerTask(void* parameter) {
                             
                             JsonDocument ackDoc;
                             ackDoc["success"] = true;
+                            
+                            struct timeval tv;
+                            gettimeofday(&tv, NULL);
+                            uint64_t rtcMs = (uint64_t)tv.tv_sec * 1000ULL + (tv.tv_usec / 1000ULL);
+                            if (tv.tv_sec > 1600000000) {
+                                ackDoc["rtc_timestamp_ms"] = rtcMs;
+                            }
+                            
                             ackDoc["message"] = "Command received by T-200";
                             String ackPayload;
                             serializeJson(ackDoc, ackPayload);
