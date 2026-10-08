@@ -24,6 +24,14 @@ static unsigned long lastCommandPoll = 0;
 /** V4: identidad del experimento activo para la bitácora de eventos del mixer. */
 static char s_mixerExperimentId[40] = "idle";
 
+/**
+ * Velocidad de mezcla por defecto (RPM).
+ * El ESC tiene un tope de 1000 RPM (`BLDC_MAX_RPM` en include/uart_protocol.h). El valor anterior
+ * forzaba 1500 RPM —por encima del límite del motor— con un `target_rad_s` derivado de 2000 RPM,
+ * inconsistente con el propio `target_rpm`. 600 RPM es el 60 % del tope.
+ */
+static const float MIXER_DEFAULT_RPM = 600.0f;
+
 /** Publica un evento start_mixer/stop_mixer con el instante exacto (epoch UTC ms, ADR-3). */
 static void postMixerEvent(const char* eventType) {
     WiFiClientSecure c;
@@ -282,21 +290,39 @@ void cloudWorkerTask(void* parameter) {
                         } else if (action == "stop_mixer") {
                             mixerCommand = true; mixerOn = false;
                         } else if (action == "set_state") {
+                            // El orquestador transporta la intención EXPLÍCITA del mixer en
+                            // payload.mixer ("on"/"off"). Antes este bloque encendía el mixer en
+                            // TODO `ACTIVE_EXPERIMENT` sin importar la planta, y en
+                            // MANUAL_OVERRIDE lo dejaba girando. La superposición mezcla/aireación
+                            // es experimental (AGENTS.md regla 11), así que solo se actúa cuando el
+                            // servidor lo pide de forma explícita.
                             String st = "";
-                            if (cmdObj["payload"].is<JsonObject>() && cmdObj["payload"]["state"].is<const char*>()) {
-                                st = cmdObj["payload"]["state"].as<String>();
+                            String mix = "";
+                            if (cmdObj["payload"].is<JsonObject>()) {
+                                JsonObject p = cmdObj["payload"].as<JsonObject>();
+                                if (p["state"].is<const char*>()) st = p["state"].as<String>();
+                                if (p["mixer"].is<const char*>()) mix = p["mixer"].as<String>();
+                                if (p["mixer_rpm"].is<float>()) newCmd.target_rpm = p["mixer_rpm"].as<float>();
                             }
-                            if (st == "ACTIVE_EXPERIMENT") { mixerCommand = true; mixerOn = true; }
-                            else if (st == "IDLE") { mixerCommand = true; mixerOn = false; }
-                            // MANUAL_OVERRIDE: se deja el mixer bajo control directo del operador.
+                            if (st == "IDLE" || st == "MANUAL_OVERRIDE") {
+                                // Abortar cualquier receta: el mixer no debe quedar girando solo.
+                                mixerCommand = true; mixerOn = false;
+                            } else if (mix == "on") {
+                                mixerCommand = true; mixerOn = true;
+                            } else if (mix == "off") {
+                                mixerCommand = true; mixerOn = false;
+                            }
+                            // ACTIVE_EXPERIMENT sin campo `mixer`: no se toca el actuador.
                         }
 
                         if (mixerCommand) {
-                            if (mixerOn && newCmd.target_rpm < 100.0f) {
-                                newCmd.target_rpm = 1500.0f; // Arranque de mezcla por defecto
-                                newCmd.target_rad_s = (2000.0f * 2.0f * 3.14159265f) / 60.0f;
-                            }
-                            if (!mixerOn) {
+                            if (mixerOn) {
+                                if (newCmd.target_rpm < 100.0f) {
+                                    newCmd.target_rpm = MIXER_DEFAULT_RPM;
+                                }
+                                // rad/s coherente con el target_rpm efectivo.
+                                newCmd.target_rad_s = (newCmd.target_rpm * 2.0f * 3.14159265f) / 60.0f;
+                            } else {
                                 newCmd.target_rpm = 0.0f;
                                 newCmd.target_rad_s = 0.0f;
                             }
