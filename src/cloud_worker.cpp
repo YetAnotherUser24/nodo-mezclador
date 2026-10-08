@@ -21,6 +21,38 @@ static portMUX_TYPE s_commandMux = portMUX_INITIALIZER_UNLOCKED;
 static unsigned long lastTelemetryPush = 0;
 static unsigned long lastCommandPoll = 0;
 
+/** V4: identidad del experimento activo para la bitácora de eventos del mixer. */
+static char s_mixerExperimentId[40] = "idle";
+
+/** Publica un evento start_mixer/stop_mixer con el instante exacto (epoch UTC ms, ADR-3). */
+static void postMixerEvent(const char* eventType) {
+    WiFiClientSecure c;
+    c.setInsecure();
+    HTTPClient h;
+    h.setTimeout(4000);
+    if (!h.begin(c, API_BASE_URL "/api/events/mixer")) {
+        return;
+    }
+    h.addHeader("Content-Type", "application/json");
+    h.addHeader("X-Device-Key", DEVICE_KEY);
+
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    uint64_t rtcMs = (uint64_t)tv.tv_sec * 1000ULL + (tv.tv_usec / 1000ULL);
+
+    JsonDocument d;
+    d["experiment_id"] = s_mixerExperimentId;
+    d["event_type"] = eventType;
+    d["status"] = "ok";
+    d["rtc_timestamp_ms"] = rtcMs;
+
+    String p;
+    serializeJson(d, p);
+    int code = h.POST(p);
+    Serial.printf("[Cloud] Mixer event '%s' -> HTTP %d\n", eventType, code);
+    h.end();
+}
+
 void updateSharedTelemetry(const SharedTelemetry& telem) {
     portENTER_CRITICAL(&s_telemMux);
     s_sharedTelem = telem;
@@ -173,6 +205,14 @@ void cloudWorkerTask(void* parameter) {
             doc["kd"] = currentTelem.pso_kd;
             doc["status_code"] = currentTelem.status_code;
             doc["is_running"] = currentTelem.is_running;
+            // V4 ADR-3: epoch UTC ms para alinear la serie del mixer con el sensor y el ODrive.
+            {
+                struct timeval tv;
+                gettimeofday(&tv, NULL);
+                if (tv.tv_sec > 1600000000) {
+                    doc["rtc_timestamp_ms"] = (uint64_t)tv.tv_sec * 1000ULL + (tv.tv_usec / 1000ULL);
+                }
+            }
 
             String payload;
             serializeJson(doc, payload);
@@ -219,7 +259,53 @@ void cloudWorkerTask(void* parameter) {
                             newCmd.target_rad_s = (speed_pct / 100.0f) * 397.9f;
                             newCmd.target_rpm = (newCmd.target_rad_s * 60.0f) / (2.0f * 3.14159265f);
                         }
+
+                        // V4: acciones del orquestador (start_mixer / stop_mixer / set_state)
+                        String action = "";
+                        if (cmdObj["payload"].is<JsonObject>()) {
+                            JsonObject p = cmdObj["payload"].as<JsonObject>();
+                            if (p["action"].is<const char*>()) action = p["action"].as<String>();
+                            if (p["experiment_id"].is<const char*>()) {
+                                strncpy(s_mixerExperimentId, p["experiment_id"].as<const char*>(),
+                                        sizeof(s_mixerExperimentId) - 1);
+                                s_mixerExperimentId[sizeof(s_mixerExperimentId) - 1] = '\0';
+                            }
+                        }
+                        if (action.length() == 0 && cmdObj["command_type"].is<const char*>()) {
+                            action = cmdObj["command_type"].as<String>();
+                        }
+
+                        bool mixerCommand = false;
+                        bool mixerOn = false;
+                        if (action == "start_mixer") {
+                            mixerCommand = true; mixerOn = true;
+                        } else if (action == "stop_mixer") {
+                            mixerCommand = true; mixerOn = false;
+                        } else if (action == "set_state") {
+                            String st = "";
+                            if (cmdObj["payload"].is<JsonObject>() && cmdObj["payload"]["state"].is<const char*>()) {
+                                st = cmdObj["payload"]["state"].as<String>();
+                            }
+                            if (st == "ACTIVE_EXPERIMENT") { mixerCommand = true; mixerOn = true; }
+                            else if (st == "IDLE") { mixerCommand = true; mixerOn = false; }
+                            // MANUAL_OVERRIDE: se deja el mixer bajo control directo del operador.
+                        }
+
+                        if (mixerCommand) {
+                            if (mixerOn && newCmd.target_rpm < 100.0f) {
+                                newCmd.target_rpm = 1500.0f; // Arranque de mezcla por defecto
+                                newCmd.target_rad_s = (2000.0f * 2.0f * 3.14159265f) / 60.0f;
+                            }
+                            if (!mixerOn) {
+                                newCmd.target_rpm = 0.0f;
+                                newCmd.target_rad_s = 0.0f;
+                            }
+                        }
                         updateSharedCommand(newCmd);
+
+                        if (mixerCommand) {
+                            postMixerEvent(mixerOn ? "start_mixer" : "stop_mixer");
+                        }
 
                         // Acknowledge the command
                         if (cmdObj["id"].is<const char*>()) {
@@ -266,8 +352,7 @@ void cloudWorkerTask(void* parameter) {
     }
 }
 
-void startCloudWorker() {
-    // Run on Core 0
+void startCloudWorker() {    // Run on Core 0
     xTaskCreatePinnedToCore(
         cloudWorkerTask,     // Task function
         "CloudWorker",       // Task name
