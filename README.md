@@ -1,5 +1,7 @@
 # Nodo mezclador — Control de velocidad del T-200 (`nodo-mezclador`)
 
+> **Repositorio:** [github.com/YetAnotherUser24/nodo-mezclador](https://github.com/YetAnotherUser24/nodo-mezclador)
+
 High-performance, closed-loop angular velocity controller for the **BlueRobotics T-200 Thruster** driven by the **SNR8503M 6–80V 20A BLDC Driver Module** and controlled by an **ESP32-S3**.
 
 ---
