@@ -28,24 +28,19 @@
 #include <Arduino.h>
 #include <math.h>
 #include "cloud_worker.h"
+#include "mixer_bus.h"
+
+// Hardware is reached exclusively through the injected bus. Real builds bind it to LEDC PWM +
+// the FG tachometer ISR; virtual builds bind it to a duty->rpm model. PID/CLI code is identical.
+static IPwmActuator& actuator = mixerActuator();
+static ITachometer& tachometer = mixerTachometer();
+static IKnobInput& knobInput = mixerKnob();
 
 // =============================================================================
 // HARDWARE PIN DEFINITIONS & CONSTANTS
 // =============================================================================
-#ifndef PIN_VSP_PWM
-  #define PIN_VSP_PWM         13       // GPIO for VSP PWM Actuation
-#endif
-
-#ifndef PIN_PULSE_IN
-  #define PIN_PULSE_IN        7       // GPIO for FG Tachometer Pulse Input
-#endif
-
 #ifndef PIN_LED
   #define PIN_LED             2       // Built-in status LED
-#endif
-
-#ifndef PIN_KNOB_ANALOG
-  #define PIN_KNOB_ANALOG     4       // GPIO for Potentiometer Manual Control
 #endif
 
 constexpr uint8_t  BLDC_POLE_PAIRS        = 7;       // BlueRobotics T-200 Thruster
@@ -54,296 +49,17 @@ constexpr float    MAX_THRUSTER_RPM       = 3800.0f; // T-200 rated max forward 
 constexpr float    MAX_THRUSTER_RAD_S     = (MAX_THRUSTER_RPM * TWO_PI_CONST) / 60.0f; // ~397.9 rad/s
 
 // =============================================================================
-// LEDC PWM HARDWARE CONFIGURATION (10 kHz, 12-bit)
+// VELOCITY STATE (bus-backed snapshot)
 // =============================================================================
-constexpr uint8_t  LEDC_PWM_CHANNEL       = 0;
-constexpr uint32_t LEDC_PWM_FREQ_HZ       = 10000;   // 10 kHz (Driver spec: 1 - 20 kHz)
-constexpr uint8_t  LEDC_PWM_RES_BITS      = 10;      // 10-bit resolution (0 .. 1023)
-constexpr uint32_t LEDC_PWM_MAX_TICKS     = (1UL << LEDC_PWM_RES_BITS); // 1024 (100% duty)
+// The real tachometer engine (ISR edge timing, fault-pulse decoding, moving-average filter)
+// and the PWM actuation stage (LEDC + analytical RC linearizer) now live behind the bus in
+// mixer_bus_real.cpp. Here we keep a local snapshot so the PID/CLI/telemetry code can keep
+// reading `velocity.rad_s`, `velocity.rpm`, ... unchanged.
+static MixerVelocity velocity;
 
-// Open-drain transistor polarity:
-// 1 = Transistor inverts: GPIO HIGH -> VSP = 0V (Stop). GPIO LOW -> VSP = 5V (Full).
-// 0 = Non-inverting / Push-pull: GPIO HIGH -> VSP = 5V.
-#define VSP_PWM_INVERTED                  1
-
-// SNR8503M Driver Thresholds (Empirical from Open-Loop Telemetry):
-// 20.0% duty -> 0 RPM (Stall/Deadband)
-// 21.0% duty -> 253 RPM (Startup)
-constexpr float MOTOR_MIN_SPIN_DUTY       = 0.25f;  // True empirical startup threshold
-constexpr float MOTOR_MAX_ALLOWED_DUTY    = 0.989f;  // Max achievable duty with 330Ω pull-up
-
-// =============================================================================
-// TOGGLEABLE ANALYTICAL PWM LINEARIZATION COMPENSATOR
-// =============================================================================
-#define ENABLE_PWM_LINEARIZATION          1          // 1 = Enabled (Option B), 0 = Pure Linear
-constexpr float PULLUP_RESISTOR_OHMS      = 200.0f;  // Rp in Ohms
-constexpr float R30_INTERNAL_OHMS         = 10000.0f;// Internal series resistor
-constexpr float GAIN_DIVIDER_RATIO        = (2.0f / 3.0f); // R32 / (R30 + R32) = 20k / 30k
-
-/**
- * @brief Exact analytical inverse of the driver's onboard RC integrator.
- * Maps desired normalized throttle D_target -> pre-warped PWM duty cycle D_pwm.
- */
-float compensate_pwm_duty(float d_target) {
-    if (d_target <= 0.0f) return 0.0f;
-    if (d_target > 1.0f) d_target = 1.0f;
-
-#if ENABLE_PWM_LINEARIZATION
-    constexpr float Rp = PULLUP_RESISTOR_OHMS;
-    constexpr float R30 = R30_INTERNAL_OHMS;
-    constexpr float G = GAIN_DIVIDER_RATIO;
-
-    // Exact analytical inverse: D_pwm = ((Rp + R30) * D) / (R30 + G * Rp * D)
-    float d_comp = ((Rp + R30) * d_target) / (R30 + G * Rp * d_target);
-    if (d_comp > 1.0f) d_comp = 1.0f;
-    return d_comp;
-#else
-    return d_target;
-#endif
-}
-
-// =============================================================================
-// VELOCITY STATE & TACHOMETER ENGINE
-// =============================================================================
-struct VelocityState {
-    float rad_s;           // Angular velocity ω [rad/s] (Primary control variable)
-    float rpm;             // Rotational speed [rev/min]
-    float rps;             // Mechanical speed [rev/s]
-    float freq_hz;         // FG electrical pulse frequency [Hz]
-    uint32_t period_us;    // Measured pulse period [microseconds]
-    uint32_t total_pulses; // Cumulative pulse counter
-};
-
-static VelocityState velocity = {0};
-
-constexpr uint32_t STOP_TIMEOUT_US        = 3500000UL; // 3.5s timeout (~2.4 RPM floor)
-constexpr uint32_t MIN_VALID_PERIOD_US    = 200;       // Glitch filter (> 5000 Hz)
-constexpr uint8_t  FILTER_SIZE            = 5;
-
-enum SensorState {
-    STATE_STOPPED = 0,
-    STATE_FIRST_PULSE,
-    STATE_RUNNING
-};
-
-static volatile uint32_t isrLastPulseUs   = 0;
-static volatile uint32_t isrPeriodUs      = 0;
-static volatile uint32_t isrTotalPulses   = 0;
-static volatile bool     isrNewPulse      = false;
-
-static SensorState currentSensorState     = STATE_STOPPED;
-static uint32_t periodBuffer[FILTER_SIZE] = {0};
-static uint8_t  filterIdx                 = 0;
-static uint8_t  filterCount               = 0;
-static uint32_t lastStablePeriodUs        = 0;
-
-static uint8_t lastFaultCode = 0;
-static uint8_t currentFaultCount = 0;
-
-void IRAM_ATTR onPulseRisingEdge() {
-    uint32_t now = micros();
-    if (isrLastPulseUs > 0) {
-        uint32_t p = now - isrLastPulseUs;
-        if (p >= MIN_VALID_PERIOD_US) {
-            isrPeriodUs = p;
-            isrLastPulseUs = now;
-            isrTotalPulses++;
-            isrNewPulse = true;
-        }
-    } else {
-        isrLastPulseUs = now;
-        isrTotalPulses++;
-        isrNewPulse = true;
-    }
-}
-
-void initSpeedSensor() {
-    pinMode(PIN_PULSE_IN, INPUT);
-    attachInterrupt(digitalPinToInterrupt(PIN_PULSE_IN), onPulseRisingEdge, RISING);
-    Serial.printf("[INIT] Reciprocal FG Tachometer active on GPIO %d (ISR Edge Timing)\n", PIN_PULSE_IN);
-}
-
-void updateSpeedMeasurement() {
-    uint32_t nowUs = micros();
-
-    noInterrupts();
-    uint32_t lastPulseUs = isrLastPulseUs;
-    uint32_t rawPeriodUs = isrPeriodUs;
-    uint32_t totalPulses = isrTotalPulses;
-    bool     hasNewPulse = isrNewPulse;
-    isrNewPulse = false;
-    interrupts();
-
-    velocity.total_pulses = totalPulses;
-    uint32_t elapsedSincePulseUs;
-    if (lastPulseUs == 0) {
-        elapsedSincePulseUs = 99999999;
-    } else if (nowUs >= lastPulseUs) {
-        elapsedSincePulseUs = nowUs - lastPulseUs;
-    } else {
-        elapsedSincePulseUs = 0; // ISR fired between micros() and noInterrupts()
-    }
-
-    // 1. Zero-Speed Timeout
-    if (elapsedSincePulseUs > STOP_TIMEOUT_US || lastPulseUs == 0) {
-        currentSensorState = STATE_STOPPED;
-        velocity.rad_s = 0.0f;
-        velocity.rpm = 0.0f;
-        velocity.rps = 0.0f;
-        velocity.freq_hz = 0.0f;
-        velocity.period_us = 0;
-        filterCount = 0;
-        lastStablePeriodUs = 0;
-        return;
-    }
-
-    // 2. First Pulse Detection
-    if (currentSensorState == STATE_STOPPED) {
-        currentSensorState = STATE_FIRST_PULSE;
-        velocity.rad_s = 0.0f;
-        velocity.rpm = 0.0f;
-        velocity.rps = 0.0f;
-        velocity.freq_hz = 0.0f;
-        velocity.period_us = 0;
-        return;
-    }
-
-    // 3. New Pulse Processing
-    if (hasNewPulse && rawPeriodUs > 0) {
-        // --- FG Fault Pulse Decoder ---
-        // Fault codes are transmitted as sequences of ~400ms pulses, separated by a 2.2s gap.
-        if (rawPeriodUs > 150000) { // Any pulse >150ms is a fault code, not normal speed
-            if (rawPeriodUs > 1500000) { // >1.5s gap marks the end of a sequence
-                if (currentFaultCount > 0) {
-                    lastFaultCode = currentFaultCount; // Commit decoded fault
-                }
-                currentFaultCount = 1; // This edge is the first pulse of the next sequence
-            } else {
-                currentFaultCount++; // Count pulses in current sequence
-            }
-            
-            // Skip moving average for fault pulses, force 0 RPM
-            velocity.period_us = rawPeriodUs;
-            velocity.freq_hz = 1000000.0f / (float)rawPeriodUs;
-            velocity.rpm = 0.0f;
-            velocity.rad_s = 0.0f;
-            velocity.rps = 0.0f;
-            return;
-        } else {
-            // Normal running, clear faults
-            lastFaultCode = 0;
-            currentFaultCount = 0;
-        }
-
-        currentSensorState = STATE_RUNNING;
-
-        if (lastStablePeriodUs > 0) {
-            bool rapidAcceleration = (rawPeriodUs * 4 < lastStablePeriodUs * 3);
-            bool rapidDeceleration = (rawPeriodUs * 3 > lastStablePeriodUs * 4);
-            if (rapidAcceleration || rapidDeceleration) {
-                filterCount = 0;
-                filterIdx = 0;
-            }
-        }
-
-        periodBuffer[filterIdx] = rawPeriodUs;
-        filterIdx = (filterIdx + 1) % FILTER_SIZE;
-        if (filterCount < FILTER_SIZE) filterCount++;
-
-        uint64_t sum = 0;
-        for (uint8_t i = 0; i < filterCount; i++) {
-            sum += periodBuffer[i];
-        }
-        lastStablePeriodUs = (uint32_t)(sum / filterCount);
-    }
-
-    // 4. Dynamic Deceleration Decay
-    if (currentSensorState == STATE_RUNNING && lastStablePeriodUs > 0) {
-        uint32_t effectivePeriodUs = lastStablePeriodUs;
-        if (elapsedSincePulseUs > lastStablePeriodUs) {
-            effectivePeriodUs = elapsedSincePulseUs;
-        }
-
-        velocity.period_us = effectivePeriodUs;
-        velocity.freq_hz = 1000000.0f / (float)effectivePeriodUs;
-        velocity.rps = velocity.freq_hz / (float)BLDC_POLE_PAIRS;
-        velocity.rad_s = velocity.rps * TWO_PI_CONST;
-        velocity.rpm = velocity.rps * 60.0f;
-    }
-}
-
-// =============================================================================
-// HARDWARE ACTUATION (Option B Open-Drain PWM Driver)
-// =============================================================================
-static float currentCommandedDuty = 0.0f;
-static float currentCompensatedDuty = 0.0f;
-static bool isPwmAttached = false;
-
-void applyHardwareDuty(float targetDuty);
-
-void initPwmHardware() {
-    // We will initialize the pin in applyHardwareDuty(0) cleanly.
-    // Just force a safe stop initially.
-    applyHardwareDuty(0.0f);
-
-    Serial.printf("[INIT] LEDC PWM active on GPIO %d (10 kHz, 12-bit, Inverted=%d)\n",
-                  PIN_VSP_PWM, VSP_PWM_INVERTED);
-    Serial.printf("       Option B Active: Rp=%.1fΩ | Linearization=%s\n",
-                  PULLUP_RESISTOR_OHMS, ENABLE_PWM_LINEARIZATION ? "ENABLED" : "BYPASSED");
-}
-
-void applyHardwareDuty(float targetDuty) {
-    targetDuty = constrain(targetDuty, 0.0f, 1.0f);
-    currentCommandedDuty = targetDuty;
-
-    if (targetDuty < 0.005f) {
-        // Complete stop: Bypass PWM entirely and use strict digital logic
-        currentCompensatedDuty = 0.0f;
-        if (isPwmAttached) {
-#if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
-            ledcDetach(PIN_VSP_PWM);
-#else
-            ledcDetachPin(PIN_VSP_PWM);
-#endif
-            isPwmAttached = false;
-        }
-        pinMode(PIN_VSP_PWM, OUTPUT);
-#if VSP_PWM_INVERTED
-        digitalWrite(PIN_VSP_PWM, HIGH); // Transistor ON -> VSP 0V -> STOP
-#else
-        digitalWrite(PIN_VSP_PWM, LOW);  // Direct VSP 0V -> STOP
-#endif
-        return;
-    }
-
-    // Scale duty into active motor spinning band [MIN_SPIN_DUTY .. MAX_ALLOWED_DUTY]
-    float effectiveDuty = MOTOR_MIN_SPIN_DUTY + targetDuty * (MOTOR_MAX_ALLOWED_DUTY - MOTOR_MIN_SPIN_DUTY);
-    float compensatedDuty = compensate_pwm_duty(effectiveDuty);
-    currentCompensatedDuty = compensatedDuty;
-
-    uint32_t ticks;
-#if VSP_PWM_INVERTED
-    ticks = (uint32_t)roundf((1.0f - compensatedDuty) * (float)LEDC_PWM_MAX_TICKS);
-#else
-    ticks = (uint32_t)roundf(compensatedDuty * (float)LEDC_PWM_MAX_TICKS);
-#endif
-    if (ticks > LEDC_PWM_MAX_TICKS) ticks = LEDC_PWM_MAX_TICKS;
-
-    if (!isPwmAttached) {
-#if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
-        ledcAttach(PIN_VSP_PWM, LEDC_PWM_FREQ_HZ, LEDC_PWM_RES_BITS);
-#else
-        ledcSetup(LEDC_PWM_CHANNEL, LEDC_PWM_FREQ_HZ, LEDC_PWM_RES_BITS);
-        ledcAttachPin(PIN_VSP_PWM, LEDC_PWM_CHANNEL);
-#endif
-        isPwmAttached = true;
-    }
-
-#if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
-    ledcWrite(PIN_VSP_PWM, ticks);
-#else
-    ledcWrite(LEDC_PWM_CHANNEL, ticks);
-#endif
+static void refreshTachometer() {
+    tachometer.update(micros());
+    velocity = tachometer.read();
 }
 
 // =============================================================================
@@ -406,7 +122,7 @@ const char* getDriverFaultStr(uint8_t code) {
 
 const char* getEscStatusStr() {
     if (inStallRecovery) return "RECOVERING";
-    if (lastFaultCode > 0) return getDriverFaultStr(lastFaultCode);
+    if (velocity.fault_code > 0) return getDriverFaultStr(velocity.fault_code);
     if (currentControlMode == MODE_STOPPED) return "STOPPED";
     if (currentControlMode == MODE_OPEN_LOOP_DUTY) {
         return (openLoopDuty > 0.001f) ? "RUNNING(OL)" : "STOPPED";
@@ -424,12 +140,12 @@ void pidReset() {
 
 void updatePidLoop() {
     if (currentControlMode == MODE_STOPPED) {
-        applyHardwareDuty(0.0f);
+        actuator.setDuty(0.0f);
         return;
     }
 
     if (currentControlMode == MODE_OPEN_LOOP_DUTY) {
-        applyHardwareDuty(openLoopDuty);
+        actuator.setDuty(openLoopDuty);
         return;
     }
 
@@ -437,7 +153,7 @@ void updatePidLoop() {
 
     if (inStallRecovery) {
         // Force 0% PWM to clear the driver's Stall Fault
-        applyHardwareDuty(0.0f);
+        actuator.setDuty(0.0f);
         pidReset(); // Prevent PID windup during reset
 
         if (millis() - recoveryStartMs > 500) { // 500ms reset pulse
@@ -490,7 +206,7 @@ void updatePidLoop() {
     pid.prev_output = u_slewed;
 
     // Apply to hardware PWM
-    applyHardwareDuty(u_slewed);
+    actuator.setDuty(u_slewed);
 }
 
 // =============================================================================
@@ -527,9 +243,8 @@ void printStatus() {
     Serial.printf("  Velocity Error:     %+6.2f rad/s\n", pid.target_rad_s - velocity.rad_s);
     Serial.printf("  FG Pulse Freq:      %6.1f Hz (Period: %lu us, Total: %lu)\n",
                   velocity.freq_hz, velocity.period_us, velocity.total_pulses);
-    Serial.printf("  Commanded Duty:     %5.1f%%\n", currentCommandedDuty * 100.0f);
-    Serial.printf("  Compensated PWM:    %5.1f%% (Linearization: %s)\n",
-                  currentCompensatedDuty * 100.0f, ENABLE_PWM_LINEARIZATION ? "ON" : "OFF");
+    Serial.printf("  Commanded Duty:     %5.1f%%\n", actuator.duty() * 100.0f);
+    Serial.printf("  Compensated PWM:    %5.1f%%\n", actuator.compensatedDuty() * 100.0f);
     Serial.printf("  PID Parameters:     Kp=%.6f, Ki=%.6f, Kd=%.6f, Int=%.4f\n",
                   pid.Kp, pid.Ki, pid.Kd, pid.integral);
     Serial.println("=============================================\n");
@@ -544,7 +259,7 @@ void handleCommand(char* cmd) {
         pid.target_rad_s = 0.0f;
         openLoopDuty = 0.0f;
         pidReset();
-        applyHardwareDuty(0.0f);
+        actuator.setDuty(0.0f);
         Serial.println("[OK] Thruster STOPPED.");
     }
     else if (strncasecmp(cmd, "SPEED", 5) == 0) {
@@ -585,30 +300,14 @@ void handleCommand(char* cmd) {
     }
     else if (strncasecmp(cmd, "TEST HIGH", 9) == 0) {
         currentControlMode = MODE_STOPPED; // prevent PID from running
-        if (isPwmAttached) {
-#if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
-            ledcDetach(PIN_VSP_PWM);
-#else
-            ledcDetachPin(PIN_VSP_PWM);
-#endif
-            isPwmAttached = false;
-        }
-        pinMode(PIN_VSP_PWM, OUTPUT);
-        digitalWrite(PIN_VSP_PWM, HIGH);
+        // Drive PA0 high (transistor ON -> VSP = 0V) via the actuator bus.
+        actuator.setDuty(1.0f);
         Serial.println("[TEST] GPIO 13 set to HIGH. If NPN is wired right, motor MUST STOP (VSP=0V).");
     }
     else if (strncasecmp(cmd, "TEST LOW", 8) == 0) {
         currentControlMode = MODE_STOPPED;
-        if (isPwmAttached) {
-#if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
-            ledcDetach(PIN_VSP_PWM);
-#else
-            ledcDetachPin(PIN_VSP_PWM);
-#endif
-            isPwmAttached = false;
-        }
-        pinMode(PIN_VSP_PWM, OUTPUT);
-        digitalWrite(PIN_VSP_PWM, LOW);
+        // Drive PA0 low (transistor OFF -> VSP = 5V) via the actuator bus.
+        actuator.setDuty(0.0f);
         Serial.println("[TEST] GPIO 13 set to LOW. If NPN is wired right, motor MUST SPIN MAX (VSP=5V).");
     }
     else if (strncasecmp(cmd, "STATUS", 6) == 0) {
@@ -672,7 +371,7 @@ void updateKnobLogic() {
     if (now - lastKnobUpdateMs < 50) return; // 20 Hz update
     lastKnobUpdateMs = now;
 
-    uint16_t rawAdc = analogRead(PIN_KNOB_ANALOG);
+    uint16_t rawAdc = knobInput.read();
     float knobPct = (float)rawAdc / 4095.0f; // 12-bit ADC (0.0 to 1.0)
 
     bool isZero = (knobPct < 0.05f); // 5% deadband at bottom
@@ -738,14 +437,13 @@ void setup() {
 #endif
 
     // 1. Initialize PWM Actuation Stage (GPIO 5, 10 kHz, 12-bit)
-    initPwmHardware();
+    actuator.init();
 
     // 2. Initialize Tachometer Edge Timing Engine (GPIO 4, Reciprocal ISR)
-    initSpeedSensor();
+    tachometer.init();
 
     // 3. Initialize Analog Knob
-    pinMode(PIN_KNOB_ANALOG, INPUT);
-    analogReadResolution(12);
+    knobInput.init();
 
     // 4. Start Network Tasks (Core 0)
     startCloudWorker();
@@ -756,7 +454,7 @@ void setup() {
 
 void loop() {
     // 1. Update pulse timing & speed estimation continuously
-    updateSpeedMeasurement();
+    refreshTachometer();
 
     // 2. Process USB Serial CLI commands
     readUserCommands();
@@ -780,7 +478,7 @@ void loop() {
         if (sysidMode) {
             // Fast compact CSV output for System ID (Strict SI units)
             Serial.printf("SYSID,%lu,%.4f,%.4f,%.4f\n", 
-                          nowMs, currentCommandedDuty, currentCompensatedDuty, velocity.rad_s);
+                          nowMs, actuator.duty(), actuator.compensatedDuty(), velocity.rad_s);
         } else {
             float targetRpm = (pid.target_rad_s * 60.0f) / TWO_PI_CONST;
             float errRadS = pid.target_rad_s - velocity.rad_s;
@@ -790,8 +488,8 @@ void loop() {
                            getEscStatusStr(),
                            velocity.rpm,
                            targetRpm,
-                           currentCommandedDuty * 100.0f,
-                           currentCompensatedDuty * 100.0f,
+                           actuator.duty() * 100.0f,
+                           actuator.compensatedDuty() * 100.0f,
                            errRadS,
                            velocity.freq_hz);
 #endif
@@ -812,11 +510,11 @@ void loop() {
             telemPush.actual_rpm = velocity.rpm;
             telemPush.target_rad_s = pid.target_rad_s;
             telemPush.actual_rad_s = velocity.rad_s;
-            telemPush.commanded_duty = currentCommandedDuty;
+            telemPush.commanded_duty = actuator.duty();
             telemPush.pso_kp = pid.Kp;
             telemPush.pso_ki = pid.Ki;
             telemPush.pso_kd = pid.Kd;
-            telemPush.status_code = lastFaultCode;
+            telemPush.status_code = velocity.fault_code;
             telemPush.is_running = (currentControlMode != MODE_STOPPED);
             updateSharedTelemetry(telemPush);
         }
