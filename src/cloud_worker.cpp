@@ -203,6 +203,13 @@ void cloudWorkerTask(void* parameter) {
             http.addHeader("X-Device-Key", DEVICE_KEY);
 
             JsonDocument doc;
+            // Alinear con el contrato del dashboard (`motor_telemetry`): `is_on`,
+            // `speed_percent` y `pwm_us` son los campos que pinta la tarjeta de motor.
+            // El mixer no mide bus (sin INA226), así que V/A/W se omiten (quedan null).
+            constexpr float kMaxThrusterRpm = 3800.0f;  // tope del T-200
+            doc["is_on"] = currentTelem.is_running;
+            doc["speed_percent"] = (currentTelem.actual_rpm / kMaxThrusterRpm) * 100.0f;
+            doc["pwm_us"] = 1500 + (int)(currentTelem.commanded_duty * 500.0f);
             doc["target_rpm"] = currentTelem.target_rpm;
             doc["actual_rpm"] = currentTelem.actual_rpm;
             doc["target_rad_s"] = currentTelem.target_rad_s;
