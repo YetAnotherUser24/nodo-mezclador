@@ -7,7 +7,7 @@
 > 2. En el archivo fuente `UR_Ctrl.c`, la asignación de velocidad (`struAppCommData.wSpeedValue = ...`) y el envío de telemetría (`UART0_SendArray(...)`) están comentados con `//`.
 > 3. El manual oficial del fabricante indica textualmente: *`UART 串口控制: 支持，需调试开启功能`* (Requiere depuración/reprogramación con Keil y programador ICP/SWD para activarse).
 >
-> **Para el control en tiempo real del motor en hardware de serie, se utiliza el pin de aceleración PWM/analógico `VSP` (Pin 3 de J1) y la retroalimentación taquimétrica `FG` (Pin 4 de J1).** Consulte [README.md](file:///c:/Users/Sam/Documents/Tesis/Codigos/t-200-controller/README.md) para la arquitectura de control activa.
+> **Para el control en tiempo real del motor en hardware de serie, se utiliza el pin de aceleración PWM/analógico `VSP` (Pin 3 de J1) y la retroalimentación taquimétrica `FG` (Pin 4 de J1).** Consulte [README.md](file:///c:/Users/Sam/Documents/Tesis/Codigos/nodo-mezclador/README.md) para la arquitectura de control activa.
 
 Este documento describe la especificación interna del protocolo según los archivos fuente del SDK (`UR_Ctrl.c`, `UR_Ctrl.h`, `hardware_config.h`, `MC_Parameter.h` y `Global_Variable.h`) como referencia de ingeniería.
 

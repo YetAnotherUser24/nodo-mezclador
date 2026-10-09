@@ -1,4 +1,4 @@
-# BlueRobotics T-200 Thruster Closed-Loop Velocity Controller
+# Nodo mezclador — Control de velocidad del T-200 (`nodo-mezclador`)
 
 High-performance, closed-loop angular velocity controller for the **BlueRobotics T-200 Thruster** driven by the **SNR8503M 6–80V 20A BLDC Driver Module** and controlled by an **ESP32-S3**.
 
@@ -201,15 +201,23 @@ The control loop executes every $T_s = 0.01\text{ s}$ ($100\text{ Hz}$):
 ### Prerequisites
 * PlatformIO CLI or PlatformIO IDE extension.
 
+`default_envs = esp32-s3`, so plain `pio run` already targets the node's board.
+
 ```bash
-# 1. Compile the ESP32-S3 Firmware
-pio run -e esp32s3
+# 1. Compile the default environment (esp32-s3)
+pio run
 
-# 2. Upload to ESP32-S3 via USB CDC
-pio run -e esp32s3 -t upload
+# 2. Upload to the ESP32-S3 via USB CDC
+pio run -t upload
 
-# 3. Open Serial Monitor at 115200 baud
-pio device monitor -e esp32s3
+# 3. Open the serial monitor at 115200 baud
+pio device monitor -b 115200
+
+# 4. Wireless update (OTA) at mixer-t200.local
+pio run -e esp32-s3-ota -t upload
+
+# 5. Bench only: UART link against an Arduino Nano (NOT the node firmware)
+pio run -e nano -t upload
 ```
 
 ---
