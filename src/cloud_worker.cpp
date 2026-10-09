@@ -278,6 +278,13 @@ void cloudWorkerTask(void* parameter) {
                                         sizeof(s_mixerExperimentId) - 1);
                                 s_mixerExperimentId[sizeof(s_mixerExperimentId) - 1] = '\0';
                             }
+                            // Accept both int and float: the dashboard/backend may send
+                            // mixer_rpm as a whole number (JSON integer).
+                            if (p["mixer_rpm"].is<float>()) {
+                                newCmd.target_rpm = p["mixer_rpm"].as<float>();
+                            } else if (p["mixer_rpm"].is<int>()) {
+                                newCmd.target_rpm = (float)p["mixer_rpm"].as<int>();
+                            }
                         }
                         if (action.length() == 0 && cmdObj["command_type"].is<const char*>()) {
                             action = cmdObj["command_type"].as<String>();
@@ -302,7 +309,6 @@ void cloudWorkerTask(void* parameter) {
                                 JsonObject p = cmdObj["payload"].as<JsonObject>();
                                 if (p["state"].is<const char*>()) st = p["state"].as<String>();
                                 if (p["mixer"].is<const char*>()) mix = p["mixer"].as<String>();
-                                if (p["mixer_rpm"].is<float>()) newCmd.target_rpm = p["mixer_rpm"].as<float>();
                             }
                             if (st == "IDLE" || st == "MANUAL_OVERRIDE") {
                                 // Abortar cualquier receta: el mixer no debe quedar girando solo.
