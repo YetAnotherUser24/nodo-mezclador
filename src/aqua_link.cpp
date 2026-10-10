@@ -31,9 +31,6 @@
 
 namespace {
 
-/** Below this the device clock is not anchored to anything real. 2020-01-01T00:00:00Z. */
-constexpr uint64_t kPlausibleEpochS = 1577836800ULL;
-
 /** One queued snapshot. A copy, not a reference: core 1 keeps writing while this is held. */
 struct Queued {
   SharedTelemetry state;
@@ -82,7 +79,7 @@ char s_experimentId[40] = {0};
 
 /** Provenance of the device clock, decided once per flush from the newest sample. */
 aqua::TimeSource timeSourceFor(uint64_t unixSeconds) {
-  return unixSeconds >= kPlausibleEpochS ? aqua::TimeSource::Ntp : aqua::TimeSource::Monotonic;
+  return unixSeconds >= aqua::kPlausibleEpochS ? aqua::TimeSource::Ntp : aqua::TimeSource::Monotonic;
 }
 
 void logLine(const char* message) { Serial.println(message); }
@@ -185,8 +182,8 @@ uint64_t aquaLinkNowMs() {
   struct timeval tv;
   gettimeofday(&tv, nullptr);
   const uint64_t local = (uint64_t)tv.tv_sec * 1000ULL + (uint64_t)(tv.tv_usec / 1000);
-  if (local >= kPlausibleEpochS * 1000ULL) return local;
-  if (s_haveBroadcast) return s_broadcastMs + (uint64_t)(millis() - s_broadcastAtMs);
+  if (local >= aqua::kPlausibleEpochS * 1000ULL) return local;
+  if (s_haveBroadcast) return aqua::extrapolateEpochMs(s_broadcastMs, s_broadcastAtMs, millis());
   return 0;
 }
 
@@ -202,7 +199,7 @@ static void acceptTimeBroadcast(const char* payload, size_t length) {
   if (!doc["t_dev_ms"].is<long long>()) return;
 
   const long long ms = doc["t_dev_ms"].as<long long>();
-  if (ms < (long long)kPlausibleEpochS * 1000LL) return;
+  if (!aqua::plausibleEpochMs(ms)) return;
 
   const char* src = doc["t_src"].is<const char*>() ? doc["t_src"].as<const char*>() : "?";
   s_broadcastMs = (uint64_t)ms;
@@ -225,14 +222,12 @@ static bool commandExpired(const char* payload, size_t length) {
   if (!probe["deadline_ms"].is<long long>()) return false;
 
   const long long deadlineMs = probe["deadline_ms"].as<long long>();
-  if (deadlineMs <= 0) return false;  // no deadline to enforce
 
-  // Uses the same best-known clock as telemetry, so a node with a broker but no internet can
-  // still tell whether a deadline has passed instead of skipping the check entirely.
+  // The rule itself lives in the shared library: whether this command is stale is one decision,
+  // and a copy per node is how the four came to disagree. Only the clock differs per node.
   const uint64_t now = aquaLinkNowMs();
-  if (now == 0) return false;  // nothing anchored: not able to judge
+  if (!aqua::deadlinePassed(deadlineMs, now)) return false;
   const long long nowMs = (long long)now;
-  if (nowMs <= deadlineMs) return false;
 
   const char* cmdId = probe["cmd_id"].is<const char*>() ? probe["cmd_id"].as<const char*>() : "";
   logf("[AQUA] command %s expired %lld ms ago; rejected\n", cmdId, nowMs - deadlineMs);
