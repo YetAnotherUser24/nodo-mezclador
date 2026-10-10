@@ -14,6 +14,10 @@ struct SharedTelemetry {
     float pso_kd = 0.0f;
     uint32_t status_code = 0; // Or last fault code
     bool is_running = false;
+    // Set by the local loop's stall detector (commanded to spin, tacho under ~50 rpm for
+    // 500 ms). Carried here rather than re-derived in the transport: two definitions of
+    // "stalled" would eventually disagree, and the one on the wire is the one nobody looks at.
+    bool stall = false;
 };
 
 // Start the network tasks (WiFi, HTTP Polling, OTA) pinned to Core 0

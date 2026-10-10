@@ -217,9 +217,6 @@ pio device monitor -b 115200
 
 # 4. Wireless update (OTA) at mixer-t200.local
 pio run -e esp32-s3-ota -t upload
-
-# 5. Bench only: UART link against an Arduino Nano (NOT the node firmware)
-pio run -e nano -t upload
 ```
 
 ---
