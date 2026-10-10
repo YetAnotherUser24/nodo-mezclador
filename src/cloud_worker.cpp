@@ -390,9 +390,11 @@ void cloudWorkerTask(void* parameter) {
             // Store-and-forward: queue one sample, then try to ship the batch. A broker
             // outage costs latency rather than data, because the batch stays in RAM until
             // it lands — which one blocking POST per interval could not promise.
-            struct timeval tv;
-            gettimeofday(&tv, NULL);
-            const uint64_t unixMs = (uint64_t)tv.tv_sec * 1000ULL + (tv.tv_usec / 1000ULL);
+            // The transport's best-known clock: NTP when there is internet, the retained
+            // `aqua/time` broadcast when there is not, and `millis()` last so the samples stay
+            // ordered and are flagged monotonic rather than collapsing onto zero.
+            uint64_t unixMs = aquaLinkNowMs();
+            if (unixMs == 0) unixMs = (uint64_t)millis();
             aquaLinkQueue(currentTelem, unixMs);
             aquaLinkFlush();
 #else

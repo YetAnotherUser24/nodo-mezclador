@@ -98,6 +98,16 @@ void aquaLinkEvent(const char* eventType, const char* detail);
  */
 void aquaLinkAck(const char* cmdId, bool applied, const char* detail);
 
+/**
+ * @brief Best-known epoch milliseconds, or 0 when no clock is anchored.
+ *
+ * Prefers the node's own NTP-synced clock and falls back to the retained `aqua/time` broadcast
+ * (`docs/TIME-SYNC.md` tier 3) carried forward on the monotonic clock. A return of 0 means
+ * nothing is anchored, and the caller should stamp its samples as monotonic rather than pretend
+ * they are epoch time.
+ */
+uint64_t aquaLinkNowMs();
+
 /** Signature the cloud worker calls when a command arrives. Implemented in `cloud_worker.cpp`. */
 void mixerHandleMqttCommand(const char* payload, size_t length);
 

@@ -60,6 +60,18 @@ uint32_t s_connectedAtMs = 0;
 bool s_configured = false;
 
 /**
+ * Newest `aqua/time` broadcast (`docs/TIME-SYNC.md` tier 3) and the uptime it arrived at.
+ *
+ * Kept with the monotonic reading rather than used as-is, so it can be carried forward. The
+ * design exists for the case with an AP and a broker but no internet, where this is the only
+ * thing that can say what time it is; a sample stamped 0 is worse than one stamped from a
+ * slightly drifting extrapolation.
+ */
+uint64_t s_broadcastMs = 0;
+uint32_t s_broadcastAtMs = 0;
+bool s_haveBroadcast = false;
+
+/**
  * Experiment the samples and events in flight belong to, or empty for none.
  *
  * Held as a copy because the caller's buffer can be rewritten between queueing and flushing.
@@ -161,6 +173,44 @@ size_t buildFields(const Queued& entry, aqua::FieldValue* out) {
  *
  * @return true when the command is stale and must not be applied
  */
+/**
+ * Best-known epoch milliseconds, or 0 when no clock is anchored.
+ *
+ * Prefers the node's own clock: NTP puts it within milliseconds of real time, and the retained
+ * broadcast is the fallback for when there is no internet. The order mirrors
+ * `docs/TIME-SYNC.md` -- the point being that a sample is never stamped 0 merely because one
+ * source is missing.
+ */
+uint64_t aquaLinkNowMs() {
+  struct timeval tv;
+  gettimeofday(&tv, nullptr);
+  const uint64_t local = (uint64_t)tv.tv_sec * 1000ULL + (uint64_t)(tv.tv_usec / 1000);
+  if (local >= kPlausibleEpochS * 1000ULL) return local;
+  if (s_haveBroadcast) return s_broadcastMs + (uint64_t)(millis() - s_broadcastAtMs);
+  return 0;
+}
+
+/**
+ * Record an `aqua/time` broadcast.
+ *
+ * Rejected if it is not plausible, so a retained message left behind by a node with an
+ * unanchored clock cannot drag this one down with it.
+ */
+static void acceptTimeBroadcast(const char* payload, size_t length) {
+  StaticJsonDocument<256> doc;
+  if (deserializeJson(doc, payload, length) != DeserializationError::Ok) return;
+  if (!doc["t_dev_ms"].is<long long>()) return;
+
+  const long long ms = doc["t_dev_ms"].as<long long>();
+  if (ms < (long long)kPlausibleEpochS * 1000LL) return;
+
+  const char* src = doc["t_src"].is<const char*>() ? doc["t_src"].as<const char*>() : "?";
+  s_broadcastMs = (uint64_t)ms;
+  s_broadcastAtMs = millis();
+  s_haveBroadcast = true;
+  logf("[AQUA] time broadcast %lld ms (t_src=%s)\n", ms, src);
+}
+
 static bool commandExpired(const char* payload, size_t length) {
   // 768, not 256. The command envelope is ~230 bytes with a nested `target`, and a document
   // too small to hold it does not truncate -- it fails to parse. That failure used to return
@@ -177,10 +227,11 @@ static bool commandExpired(const char* payload, size_t length) {
   const long long deadlineMs = probe["deadline_ms"].as<long long>();
   if (deadlineMs <= 0) return false;  // no deadline to enforce
 
-  struct timeval tv;
-  gettimeofday(&tv, nullptr);
-  const long long nowMs = (long long)tv.tv_sec * 1000LL + (long long)(tv.tv_usec / 1000);
-  if (nowMs < (long long)kPlausibleEpochS * 1000LL) return false;
+  // Uses the same best-known clock as telemetry, so a node with a broker but no internet can
+  // still tell whether a deadline has passed instead of skipping the check entirely.
+  const uint64_t now = aquaLinkNowMs();
+  if (now == 0) return false;  // nothing anchored: not able to judge
+  const long long nowMs = (long long)now;
   if (nowMs <= deadlineMs) return false;
 
   const char* cmdId = probe["cmd_id"].is<const char*>() ? probe["cmd_id"].as<const char*>() : "";
@@ -193,6 +244,15 @@ static void onMessage(char* topic, uint8_t* payload, unsigned int length) {
   // The topic is carried into the log because a command that is dropped silently and a command
   // that was never delivered look identical from the handler's point of view.
   logf("[AQUA] rx %s (%u bytes)\n", topic ? topic : "?", (unsigned)length);
+
+  // Route by topic. `aqua/time` is a retained broadcast, not a command -- handing it to the
+  // command handler would have it report "no action" at best, and at worst bury a real time
+  // message in the noise that the broker's retained-message behaviour already creates.
+  if (topic != nullptr && strcmp(topic, aqua::AQUA_TIME_TOPIC) == 0) {
+    acceptTimeBroadcast((const char*)payload, (size_t)length);
+    return;
+  }
+
   if (commandExpired((const char*)payload, (size_t)length)) return;
   mixerHandleMqttCommand((const char*)payload, (size_t)length);
 }
@@ -226,6 +286,9 @@ static bool connectOnce() {
   if (aqua::commandTopic(aqua::Role::Mixer, cmdTopic, sizeof(cmdTopic))) {
     s_mqtt.subscribe(cmdTopic, 1);
   }
+  // Tier 3 of `docs/TIME-SYNC.md`. Retained, so it arrives immediately on subscribe -- but only
+  // if something has published it, which is why the node also keeps its own NTP fallback.
+  s_mqtt.subscribe(aqua::AQUA_TIME_TOPIC, 1);
 
   s_presencePublished = false;  // republished by the next loop so a restart is visible
   return true;
