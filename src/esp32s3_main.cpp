@@ -26,8 +26,10 @@
  */
 
 #include <Arduino.h>
+#include <esp_task_wdt.h>
 #include <math.h>
 #include "cloud_worker.h"
+#include "config.h"
 #include "mixer_bus.h"
 
 // Hardware is reached exclusively through the injected bus. Real builds bind it to LEDC PWM +
@@ -163,8 +165,10 @@ void updatePidLoop() {
         return;
     }
 
-    // Detect stall: Commanded to spin, but FG reports < 50 RPM (or 5Hz fault pulses)
-    if (pid.target_rad_s > 0.1f && velocity.rpm < 50.0f) {
+    // Detect stall: commanded to spin, but the tachometer reports below the stall floor.
+    // `MIXER_STALL_RPM` is the same constant the published `stall` bit uses, so the local
+    // status string and the telemetry flag cannot drift apart.
+    if (pid.target_rad_s > 0.1f && velocity.rpm < MIXER_STALL_RPM) {
         if (stallTimerMs == 0) {
             stallTimerMs = millis();
         } else if (millis() - stallTimerMs > 1500) { // 1.5s timeout
@@ -431,6 +435,27 @@ void setup() {
     Serial.println("  LEDC PWM (Option B Stiff Pull-Up) + Reciprocal FG     ");
     Serial.println("========================================================");
 
+    // Task watchdog: 60 s, trigger_panic, matching the sensor and pump nodes.
+    //
+    // Without this the Arduino default applies -- 5 s, with the idle tasks on the watch list --
+    // and `PubSubClient::connect` busy-waits for a CONNACK on a 15 s socket timeout. A broker
+    // that accepts the TCP connection and then answers nothing starves core 0's idle task (the
+    // cloud task is pinned there) and the node resets. Store-and-forward keeps the pending
+    // batch in RAM, so a reset discards it -- and an outage is exactly when the batch matters.
+    // 60 s is comfortably above the 15 s library timeout and still recovers a real hang.
+#if defined(ESP_IDF_VERSION_MAJOR) && (ESP_IDF_VERSION_MAJOR >= 5)
+    esp_task_wdt_config_t wdt_config = {
+        .timeout_ms = 60000,
+        .idle_core_mask = (1 << portNUM_PROCESSORS) - 1,
+        .trigger_panic = true,
+    };
+    esp_task_wdt_reconfigure(&wdt_config);
+    esp_task_wdt_add(NULL);
+#else
+    esp_task_wdt_init(60, true);
+    esp_task_wdt_add(NULL);
+#endif
+
 #if defined(PIN_LED) && (PIN_LED >= 0)
     pinMode(PIN_LED, OUTPUT);
     digitalWrite(PIN_LED, LOW);
@@ -453,6 +478,17 @@ void setup() {
 }
 
 void loop() {
+    // Feed the task watchdog, because `setup()` registers *this* task with
+    // `esp_task_wdt_add(NULL)`. Without this the node reboots on an exact 60 s cycle --
+    // measured on the bench as boots 60.3 s apart with `E (60237) task_wdt: ... did not
+    // reset the watchdog in time`. A watchdog nobody feeds is not a watchdog; it is a
+    // scheduled reboot, and it is worse than the outage it was meant to survive because a
+    // reset discards the store-and-forward batch.
+    //
+    // The idle tasks remain on the watch list too (`idle_core_mask`), which is what still
+    // catches the real fault: a core-0 task blocking long enough to starve idle0.
+    esp_task_wdt_reset();
+
     // 1. Update pulse timing & speed estimation continuously
     refreshTachometer();
 
@@ -516,6 +552,10 @@ void loop() {
             telemPush.pso_kd = pid.Kd;
             telemPush.status_code = velocity.fault_code;
             telemPush.is_running = (currentControlMode != MODE_STOPPED);
+            // Commanded to spin with the tachometer below the floor -- the same predicate the
+            // stall detector and `getEscStatusStr()` use, published so the gateway can chart
+            // it instead of re-deriving it from a threshold it does not own.
+            telemPush.stall = (pid.target_rad_s > 0.1f && velocity.rpm < MIXER_STALL_RPM);
             updateSharedTelemetry(telemPush);
         }
 
