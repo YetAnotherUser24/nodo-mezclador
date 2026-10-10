@@ -13,3 +13,7 @@ scratch/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Python bytecode (was committed by accident; see firmware-patches/00-README.md)
+__pycache__/
+*.pyc
