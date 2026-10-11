@@ -296,6 +296,10 @@ bool aquaLinkBegin() {
   if (WiFi.status() != WL_CONNECTED) return false;
 
   s_bootId = esp_random() | 1u;
+  // Push the real per-boot id into the builder, which was constructed with a placeholder
+  // because the RNG is not up at static-init. Without this the published boot_id stays 0
+  // and the (node_id, boot_id, seq) key cannot separate two boots.
+  s_builder.setBootId(s_bootId);
 
   s_mqtt.setServer(AQUA_MQTT_HOST, AQUA_MQTT_PORT);
   s_mqtt.setBufferSize(AQUA_MQTT_BUFFER_BYTES);
