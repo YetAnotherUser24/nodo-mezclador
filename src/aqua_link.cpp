@@ -20,6 +20,7 @@
 #include <Arduino.h>
 #include <PubSubClient.h>
 #include <WiFi.h>
+#include <ESPmDNS.h>
 #include <esp_random.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -91,6 +92,49 @@ void logf(const char* format, ...) {
   vsnprintf(buffer, sizeof(buffer), format, args);
   va_end(args);
   Serial.print(buffer);
+}
+
+IPAddress s_brokerIp;
+uint8_t s_resolveFailures = 0;
+
+/**
+ * Resolves the MQTT broker dynamically:
+ * 1. Literal IPv4 address (e.g. override via -DAQUA_MQTT_HOST="x.x.x.x")
+ * 2. mDNS query (ESPmDNS, bounded timeout 800 ms) for "aqua-station.local" or bare hostname
+ * 3. Unicast DNS fallback (WiFi.hostByName)
+ * 4. Default gateway fallback if AQUA_MQTT_HOST is "gateway"
+ */
+static bool resolveBrokerIp(IPAddress& outIp) {
+  if (outIp != INADDR_NONE && outIp != IPAddress(0, 0, 0, 0)) {
+    return true;
+  }
+  if (outIp.fromString(AQUA_MQTT_HOST)) {
+    return true;
+  }
+  char host[32];
+  strncpy(host, AQUA_MQTT_HOST, sizeof(host) - 1);
+  host[sizeof(host) - 1] = '\0';
+  char* dot = strstr(host, ".local");
+  if (dot) *dot = '\0';
+
+  MDNS.begin(AQUA_MQTT_CLIENT_ID);
+  outIp = MDNS.queryHost(host, 800);
+  if (outIp != INADDR_NONE && outIp != IPAddress(0, 0, 0, 0)) {
+    logf("[AQUA] mDNS resolved %s -> %s\n", host, outIp.toString().c_str());
+    return true;
+  }
+  if (WiFi.hostByName(AQUA_MQTT_HOST, outIp) && outIp != INADDR_NONE && outIp != IPAddress(0, 0, 0, 0)) {
+    logf("[AQUA] DNS resolved %s -> %s\n", AQUA_MQTT_HOST, outIp.toString().c_str());
+    return true;
+  }
+  if (strcmp(AQUA_MQTT_HOST, "gateway") == 0) {
+    outIp = WiFi.gatewayIP();
+    if (outIp != INADDR_NONE && outIp != IPAddress(0, 0, 0, 0)) {
+      logf("[AQUA] using gateway -> %s\n", outIp.toString().c_str());
+      return true;
+    }
+  }
+  return false;
 }
 
 /** `aqua/presence/<node_id>` — one topic per node, retained. */
@@ -255,6 +299,12 @@ static void onMessage(char* topic, uint8_t* payload, unsigned int length) {
 /* ------------------------------- Connect -------------------------------- */
 
 static bool connectOnce() {
+  if (!resolveBrokerIp(s_brokerIp)) {
+    logf("[AQUA] cannot connect: host %s not resolved\n", AQUA_MQTT_HOST);
+    return false;
+  }
+  s_mqtt.setServer(s_brokerIp, AQUA_MQTT_PORT);
+
   char willTopic[80];
   if (!presenceTopic(willTopic, sizeof(willTopic))) return false;
 
@@ -301,7 +351,11 @@ bool aquaLinkBegin() {
   // and the (node_id, boot_id, seq) key cannot separate two boots.
   s_builder.setBootId(s_bootId);
 
-  s_mqtt.setServer(AQUA_MQTT_HOST, AQUA_MQTT_PORT);
+  if (resolveBrokerIp(s_brokerIp)) {
+    s_mqtt.setServer(s_brokerIp, AQUA_MQTT_PORT);
+  } else {
+    s_mqtt.setServer(AQUA_MQTT_HOST, AQUA_MQTT_PORT);
+  }
   s_mqtt.setBufferSize(AQUA_MQTT_BUFFER_BYTES);
   s_mqtt.setKeepAlive(AQUA_MQTT_KEEPALIVE_S);
   // Bounded explicitly. The library default is 15 s of busy-waiting for a CONNACK, which is long
@@ -313,7 +367,9 @@ bool aquaLinkBegin() {
   s_mqtt.setCallback(onMessage);
 
   s_configured = true;
-  logf("[AQUA] mqtt %s:%d as %s\n", AQUA_MQTT_HOST, AQUA_MQTT_PORT, AQUA_MQTT_CLIENT_ID);
+  logf("[AQUA] mqtt %s:%d as %s\n",
+       (s_brokerIp != INADDR_NONE && s_brokerIp != IPAddress(0, 0, 0, 0)) ? s_brokerIp.toString().c_str() : AQUA_MQTT_HOST,
+       AQUA_MQTT_PORT, AQUA_MQTT_CLIENT_ID);
   return true;
 }
 
@@ -333,9 +389,14 @@ void aquaLinkLoop() {
         s_nextAttemptMs = now;
         s_connectedAtMs = now;
         s_everConnected = true;
+        s_resolveFailures = 0;
         logLine("[AQUA] mqtt connected");
       } else {
         s_nextAttemptMs = now + AQUA_MQTT_RETRY_MS;
+        if (++s_resolveFailures >= 3) {
+          s_brokerIp = INADDR_NONE;
+          s_resolveFailures = 0;
+        }
       }
     }
     return;

@@ -57,19 +57,21 @@
    `<host>.local` is already used for OTA, and resolving two names costs more than
    it saves. */
 #ifndef AQUA_MQTT_HOST
-#define AQUA_MQTT_HOST           "aqua-station.local"
+#define AQUA_MQTT_HOST           "192.168.137.114"  // Pi del banco; "aqua-station.local" (mDNS) no resuelve en la red Wi-Fi Direct
 #endif
 #ifndef AQUA_MQTT_PORT
 #define AQUA_MQTT_PORT           1883
 #endif
-/* Anonymous is correct on the isolated bench network; the broker is bound to the
-   Tailscale interface. If it is ever exposed further these become real credentials
-   AND the TLS port, not just a password over 1883. */
+/* The Pi's broker runs `allow_anonymous false`, so each node carries its own
+   credential (`/etc/aqua/mqtt-node-credentials` on the station). The user is the role
+   name; the password is per-node. Previously left blank for the isolated bench, which
+   worked only while the broker allowed anonymous -- once it did not, the broker kept
+   answering `disconnected, not authorised` and the node looked dead. */
 #ifndef AQUA_MQTT_USER
-#define AQUA_MQTT_USER           ""
+#define AQUA_MQTT_USER           "mixer"
 #endif
 #ifndef AQUA_MQTT_PASSWORD
-#define AQUA_MQTT_PASSWORD       ""
+#define AQUA_MQTT_PASSWORD       "0zbPwvIrH7J4yJ2PNtRSOnya"
 #endif
 #ifndef AQUA_MQTT_KEEPALIVE_S
 #define AQUA_MQTT_KEEPALIVE_S    30

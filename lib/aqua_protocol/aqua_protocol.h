@@ -153,11 +153,17 @@ bool deadlinePassed(long long deadlineMs, uint64_t nowMs);
 /**
  * Envelope buffer size.
  *
- * Measured, not guessed: the widest role (the aerator) costs ~270 bytes per sample, so a
- * full batch of `AQUA_ENVELOPE_BATCH_LIMIT` needs ~6.8 KB plus the ~150-byte header.
+ * Measured, not guessed: the widest role (the aerator) costs ~287 bytes per sample, so a full
+ * batch of `AQUA_ENVELOPE_BATCH_LIMIT` (18) needs ~5.2 KB plus the ~150-byte header.
  * `test_protocol.cpp` asserts that the declared limit actually fits in the declared buffer —
  * an undersized buffer does not fail loudly, it makes the node drop every full batch, which
  * looks exactly like a network problem.
+ *
+ * This guards the *serializer*. It is deliberately larger than
+ * `AQUA_ENVELOPE_BATCH_LIMIT` needs, because the real transmit ceiling is the ESP32 socket
+ * buffer (~5744 bytes), which is what `AQUA_ENVELOPE_BATCH_LIMIT` is sized against — see the
+ * comment there. A buffer sized exactly to the batch would leave no room for a topic, and the
+ * headroom makes an accidental serialization overflow visible in a log instead of silent.
  *
  * Allocate this **statically**, not on the stack. 8 KB will not fit in the default ESP32 task
  * stack, and a stack overflow here reboots the node in the middle of an experiment.
@@ -168,10 +174,26 @@ constexpr size_t AQUA_ENVELOPE_MAX_BYTES = 8192;
  * Samples per envelope.
  *
  * The protocol allows 200 (`MAX_BATCH`), but a 200-sample aerator envelope is ~54 KB, which no
- * ESP32 MQTT client will send happily. 25 matches the previous firmware's batch size: 5 s of
- * data at the 5 Hz experiment cadence.
+ * ESP32 MQTT client will send happily.
+ *
+ * **The binding limit is the ESP32 TCP send buffer, not the 8 KB envelope buffer.** PubSubClient
+ * 2.8 copies topic + payload into one flat buffer and hands it to `WiFiClient::write()` in a
+ * **single** call. That call returns the number of bytes the socket actually accepted and
+ * PubSubClient ignores the short count — so a payload above `TCP_SND_BUF` (~5744 bytes here) is
+ * **truncated in the middle of a TCP segment**, and the bytes that follow on the wire are the
+ * stale contents of the transport buffer. The broker reads that as a new MQTT packet and drops
+ * the client with `malformed packet`; the gateway then fails `json.loads` with
+ * `UnicodeDecodeError` at a fixed offset. Measured on real hardware: a 20-sample aerator batch is
+ * 5735 bytes and corrupts from byte ~5740 on every flush, while the 8-field sensor and 9-field
+ * mixer never reach the limit and look healthy.
+ *
+ * The 8 KB `AQUA_ENVELOPE_MAX_BYTES` guard below does **not** catch this: it proves the envelope
+ * fits in its own buffer, never that the WiFi driver will transmit it in one write. Sized to stay
+ * under the socket buffer with margin: 18 x ~287 bytes/sample (the widest role) is ~5.2 KB, well
+ * below ~5.7 KB. A flush that would exceed the count simply splits across two envelopes — the
+ * queue check at the top of `flush()` publishes early rather than dropping samples.
  */
-constexpr size_t AQUA_ENVELOPE_BATCH_LIMIT = 25;
+constexpr size_t AQUA_ENVELOPE_BATCH_LIMIT = 18;
 
 /**
  * Write `aqua/tlm/<role>` into `out`.

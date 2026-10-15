@@ -125,6 +125,7 @@ static void updateSharedCommand(const SharedTelemetry& cmd) {
     portEXIT_CRITICAL(&s_commandMux);
 }
 
+
 #if !AQUA_TRANSPORT_MQTT
 /** POST the legacy acknowledgement for one command. */
 static void acknowledgeHttp(const String& cmdId, bool success) {
@@ -189,14 +190,13 @@ static bool applyMixerCommand(const String& cmdId, const String& action,
 
     SharedTelemetry newCmd = getSharedCommand();
 
-    if (read("target_rpm").is<float>()) {
+    bool hasExplicitRpm = false;
+    if (read("target_rpm").is<float>() || read("target_rpm").is<int>()) {
         newCmd.target_rpm = read("target_rpm").as<float>();
-    }
-    // Accept both int and float: the dashboard/backend may send mixer_rpm as a JSON integer.
-    if (read("mixer_rpm").is<float>()) {
+        hasExplicitRpm = true;
+    } else if (read("mixer_rpm").is<float>() || read("mixer_rpm").is<int>()) {
         newCmd.target_rpm = read("mixer_rpm").as<float>();
-    } else if (read("mixer_rpm").is<int>()) {
-        newCmd.target_rpm = (float)read("mixer_rpm").as<int>();
+        hasExplicitRpm = true;
     }
 
     if (read("target_rad_s").is<float>()) {
@@ -243,7 +243,7 @@ static bool applyMixerCommand(const String& cmdId, const String& action,
 
     if (mixerCommand) {
         if (mixerOn) {
-            if (newCmd.target_rpm < 100.0f) {
+            if (!hasExplicitRpm && newCmd.target_rpm < 100.0f) {
                 newCmd.target_rpm = MIXER_DEFAULT_RPM;
             }
             // rad/s coherent with the effective target_rpm.
