@@ -283,7 +283,12 @@ void cloudWorkerTask(void* parameter) {
     WiFi.setAutoReconnect(true);
     // 3. Estabilidad de hardware
     WiFi.setTxPower(WIFI_POWER_8_5dBm);
-    // 4. Iniciar (SOLO UNA VEZ)
+    // 4. IP estática asignada (AquaStation)
+    IPAddress local_IP(AQUA_STATIC_IP);
+    IPAddress gateway(AQUA_STATIC_GATEWAY);
+    IPAddress subnet(AQUA_STATIC_SUBNET);
+    WiFi.config(local_IP, gateway, subnet);
+    // 5. Iniciar
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
     unsigned long lastWifiRetry = millis();
@@ -302,6 +307,7 @@ void cloudWorkerTask(void* parameter) {
             if (millis() - lastWifiRetry > 30000) {
                 Serial.println("[Red] Pila WiFi atascada. Reiniciando hardware de red...");
                 WiFi.disconnect(true);
+                WiFi.config(local_IP, gateway, subnet);
                 vTaskDelay(pdMS_TO_TICKS(100));
                 WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
                 lastWifiRetry = millis();

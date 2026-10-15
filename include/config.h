@@ -10,13 +10,23 @@
 // Guarded so a credential can be injected at build time; see the note in
 // nodo-aerador/src/config.h. An unguarded #define here silently wins over the flag.
 #ifndef AQUA_WIFI_SSID
-#define AQUA_WIFI_SSID  "WifiDev"
+#define AQUA_WIFI_SSID  "AquaStation"
 #endif
 #ifndef AQUA_WIFI_PASSWORD
-#define AQUA_WIFI_PASSWORD "rpidev24"
+#define AQUA_WIFI_PASSWORD "AquaPass"
 #endif
 #define WIFI_SSID       AQUA_WIFI_SSID
 #define WIFI_PASSWORD   AQUA_WIFI_PASSWORD
+
+#ifndef AQUA_STATIC_IP
+#define AQUA_STATIC_IP          192, 168, 4, 11
+#endif
+#ifndef AQUA_STATIC_GATEWAY
+#define AQUA_STATIC_GATEWAY     0, 0, 0, 0
+#endif
+#ifndef AQUA_STATIC_SUBNET
+#define AQUA_STATIC_SUBNET      255, 255, 255, 0
+#endif
 
 // ---------------------------------------------------------
 // OTA Configuration
@@ -57,7 +67,7 @@
    `<host>.local` is already used for OTA, and resolving two names costs more than
    it saves. */
 #ifndef AQUA_MQTT_HOST
-#define AQUA_MQTT_HOST           "192.168.137.114"  // Pi del banco; "aqua-station.local" (mDNS) no resuelve en la red Wi-Fi Direct
+#define AQUA_MQTT_HOST           "192.168.4.1"  // Pi del banco (Hotspot AquaStation)
 #endif
 #ifndef AQUA_MQTT_PORT
 #define AQUA_MQTT_PORT           1883
