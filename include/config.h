@@ -43,7 +43,7 @@
 #define DEVICE_KEY      "ESP32_T_200" // Actual device key in DB
 
 // Polling and Telemetry Intervals
-#define TELEMETRY_INTERVAL_MS   3000
+#define TELEMETRY_INTERVAL_MS   5000
 #define COMMAND_POLL_INTERVAL_MS 1000
 
 // ---------------------------------------------------------
